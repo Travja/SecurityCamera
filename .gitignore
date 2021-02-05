@@ -4,3 +4,5 @@
 */*.zip
 */dependency-reduced-pom.xml
 */node_modules/
+lib/
+JavaApp/lib/
