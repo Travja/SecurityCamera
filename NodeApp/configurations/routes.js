@@ -1,7 +1,7 @@
 import general_routes from "../routes/general-routes.js";
 
 /**
- * Confugures the routes for the api and chains
+ * Configures the routes for the api and chains
  * them to the app instance.
  */
 class ConfigRoutes {
