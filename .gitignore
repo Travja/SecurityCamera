@@ -1,5 +1,6 @@
 .idea/
-target/
-*.iml
-*.zip
-dependency-reduced-pom.xml
+*/target/
+*/*.iml
+*/*.zip
+*/dependency-reduced-pom.xml
+*/node_modules/

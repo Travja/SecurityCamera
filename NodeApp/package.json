@@ -1,0 +1,18 @@
+{
+  "name": "cameraapp",
+  "version": "1.0.0",
+  "description": "Webserver for Camera app",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Camera Guys",
+  "license": "GPL-3.0-only",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^1.19.0",
+    "cookie-parser": "^1.4.5",
+    "express": "^4.17.1",
+    "pug": "^3.0.0"
+  }
+}
