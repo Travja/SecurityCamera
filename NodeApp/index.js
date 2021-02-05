@@ -11,7 +11,7 @@ const { ConfigRoutes } = routes;
 app.use(bodyParser.json({ limit: "50mb" }));
 app.use(bodyParser.urlencoded({ limit: "50mb", extended: true }));
 
-new ConfigRoutes();
+new ConfigRoutes(app);
 
 if (NODE_ENV === "production") {
   const __dirname = dirname(fileURLToPath(import.meta.url));
