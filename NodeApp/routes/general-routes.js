@@ -1,4 +1,5 @@
 import eRequestType from "../enums/eRequestType.js";
+import notification from "./notification-controller";
 
 /**
  * general route objects as an array
@@ -13,6 +14,11 @@ const general_routes = [
     type: eRequestType.GET,
     handler: (req, res) => {},
     callback: (req, res) => {},
+  },
+  {
+    url: "/notify",
+    type: eRequestType.POST,
+    handler: notification
   },
 ];
 
