@@ -59,4 +59,4 @@ const notification = (req,res) => {
     }).catch((error) => console.log(error));
 }
 
-module.exports = {motionDetect};
+module.exports = {notification};
