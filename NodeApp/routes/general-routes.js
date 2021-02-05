@@ -1,4 +1,4 @@
-import eRequestType from "../emuns/eRequestType.js";
+import eRequestType from "../enums/eRequestType.js";
 
 const general_routes = [
   {
