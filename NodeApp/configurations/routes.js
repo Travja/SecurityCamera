@@ -1,4 +1,5 @@
 import general_routes from "../routes/general-routes.js";
+import notification_routes from "../routes/notification-controller.js";
 
 /**
  * Configures the routes for the api and chains
@@ -7,11 +8,11 @@ import general_routes from "../routes/general-routes.js";
 class ConfigRoutes {
   /**
    * build on construction
-   * @param {Object} instance - the express app instance 
+   * @param {Object} instance - the express app instance
    */
   constructor(instance) {
     this.app = instance;
-    this.configureRoutes(general_routes);
+    this.configureRoutes(general_routes.concat(notification_routes));
   }
 
   /**
