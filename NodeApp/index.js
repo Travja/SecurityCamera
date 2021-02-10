@@ -5,6 +5,8 @@ import routes from "./configurations/routes.js";
 import { NODE_ENV, PORT as ENV_PORT } from "./keys.js";
 import path, { dirname } from "path";
 import { fileURLToPath } from "url";
+import routes from "./routes/general-routes.js";
+import Routing from "dobject-routing";
 
 // gather required frameworks and configurations
 const app = express();
@@ -18,7 +20,8 @@ app.use(bodyParser.json({ limit: "50mb" }));
 app.use(bodyParser.urlencoded({ limit: "50mb", extended: true }));
 
 // spin up configurations
-new ConfigRoutes(app);
+app.use('/', Routing(routes));
+//new ConfigRoutes(app);
 
 // client setup and routing
 if (NODE_ENV === "production") {
