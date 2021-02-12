@@ -1,5 +1,6 @@
 package cameraguys.project;
 
+import cameraguys.project.webserver.HttpStreamServer;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -12,6 +13,7 @@ import org.opencv.imgproc.Imgproc;
 import org.opencv.videoio.VideoCapture;
 import org.opencv.videoio.VideoWriter;
 
+import javax.swing.*;
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +24,8 @@ import java.util.concurrent.TimeUnit;
 public class ClientWindow {
 
     private static final double MIN_AREA = 50;//Disturbance has to be more than this area to be identified.
+    static Timer tmrVideoProcess;
+    private static HttpStreamServer httpStreamService;
     @FXML
     private Button startBtn;
     @FXML
@@ -35,7 +39,6 @@ public class ClientWindow {
     private int stage = 0;
     private boolean outlineSmallerContours = false, outlineAll = true;
     private VideoWriter writer = null;
-
     private long lastMotion = 0l;
 
     public ArrayList<Rect> findContours(Mat outmat) {
@@ -99,6 +102,8 @@ public class ClientWindow {
     @FXML
     protected void startCamera(ActionEvent event) {
         capture = new VideoCapture();
+        httpStreamService = new HttpStreamServer(displayFrame);
+        new Thread(httpStreamService).start();
         Runnable frameGrabber = getGrabber();
         this.timer = Executors.newSingleThreadScheduledExecutor();
         this.timer.scheduleAtFixedRate(frameGrabber, 0, 33, TimeUnit.MILLISECONDS);
@@ -149,6 +154,7 @@ public class ClientWindow {
                 MatOfByte buf2 = new MatOfByte();
                 Imgcodecs.imencode(".png", processingFrame, buf2);
 
+                httpStreamService.imag = displayFrame;
                 currentFrame.setImage(new Image(new ByteArrayInputStream(buffer.toArray())));
                 filters.setImage(new Image(new ByteArrayInputStream(buf2.toArray())));
                 diffFrame = initialFrame; //Update diffFrame
@@ -181,6 +187,8 @@ public class ClientWindow {
     public void setClosed() {
         stopFrames();
         stopVideo();
+        if(httpStreamService != null && httpStreamService.isRunning())
+        httpStreamService.stopServer();
     }
 
     private void processVideo(Mat frame) {
@@ -198,6 +206,7 @@ public class ClientWindow {
     }
 
     private void stopVideo() {
-        writer.release();
+        if (writer != null && writer.isOpened())
+            writer.release();
     }
 }
