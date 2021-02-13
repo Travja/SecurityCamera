@@ -1,15 +1,14 @@
 import nodemailer from "nodemailer";
 import Mailgen from "mailgen";
-import fs from "fs";
 import { PORT } from "../keys.js";
-import eRquestType from "../enums/eRequestType.js";
+import eRequestType from "../enums/eRequestType.js";
 
-var transporter = nodemailer.createTransport({
-  host: "smtp.mailtrap.io",
-  port: 2525,
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST,
+  port: process.env.SMTP_PORT,
   auth: {
-    user: "6d388ff2a69cef",
-    pass: "a0bc4d3f470f55",
+    user: process.env.SMTP_USERNAME,
+    pass: process.env.SMTP_PASSWORD,
   },
 });
 
@@ -24,7 +23,7 @@ let MailGenerator = new Mailgen({
 const notification_routes = [
   {
     url: "/api/notify",
-    type: eRquestType.POST,
+    type: eRequestType.POST,
     handler: async (req, res) => {
       try {
         const { name, userEmail, filename, path } = req.body;
