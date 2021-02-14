@@ -17,11 +17,11 @@ export default class Streams extends Component {
 
   render() {
     const cards = [];
-    for (let i = 0; i < 9; i++) {
-        const imageUrl = "https://www.w3schools.com/html/mov_bbb.mp4"
+    for (let i = 0; i < 3*6; i++) {
+        const imageUrl = "http://localhost:8080/";
         cards.push(
-            <StreamingCard title={new Date().toString()} download={imageUrl} save="street">
-                <video className="stream-video" src={imageUrl} width="100%" height="100%" controls muted/>
+            <StreamingCard title={new Date().toString()} download={imageUrl} save="street" key={i}>
+                <div style={{width: "100%", height: "100%", backgroundImage: `url(${imageUrl})`, backgroundSize: "contain", backgroundRepeat: "no-repeat", backgroundPosition: "center"}}></div>
             </StreamingCard>
         );
     }
