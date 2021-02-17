@@ -5,6 +5,7 @@ import routes from "./configurations/routes.js";
 import { NODE_ENV, PORT as ENV_PORT } from "./keys.js";
 import path, { dirname } from "path";
 import { fileURLToPath } from "url";
+import cors from "cors";
 
 // gather required frameworks and configurations
 const app = express();
@@ -12,6 +13,10 @@ const { ConfigRoutes } = routes;
 
 // declare port
 const PORT = ENV_PORT || 42069;
+
+if (NODE_ENV === "development") {
+    app.use(cors());
+}
 
 // app setup
 app.use(bodyParser.json({ limit: "50mb" }));
@@ -22,9 +27,9 @@ new ConfigRoutes(app);
 // client setup and routing
 if (NODE_ENV === "production") {
   const __dirname = dirname(fileURLToPath(import.meta.url));
-  app.use(express.static("client/build"));
+  app.use(express.static("build/client"));
   app.get("*", (req, res) => {
-    return res.sendFile(path.join(__dirname, "client/build/index.html"));
+    return res.sendFile(path.join(__dirname, "client/index.html"));
   });
 }
 

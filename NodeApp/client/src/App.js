@@ -2,6 +2,7 @@ import React, { lazy, Suspense, useState } from "react";
 import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 import ErrorBoundary from "./components/code-spliting/errorBoundary";
 import { fallback } from "./components/code-spliting/fallback-ui";
+import axios from "axios"
 
 import "./styles/Page.css";
 import "./styles/Drawer.css";
@@ -14,6 +15,7 @@ const Recordings = lazy(() => import("./components/pages/Recordings"));
 const Settings = lazy(() => import("./components/pages/Settings"));
 
 function App() {
+    axios.defaults.baseURL = process.env.REACT_APP_API_URL ? process.env.REACT_APP_API_URL : "";
     return (
         <ErrorBoundary>
             <Router>

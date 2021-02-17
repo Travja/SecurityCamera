@@ -4,3 +4,4 @@
 */*.zip
 */dependency-reduced-pom.xml
 */node_modules/
+NodeApp/build
