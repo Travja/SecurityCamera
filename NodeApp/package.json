@@ -3,9 +3,10 @@
   "version": "1.0.0",
   "description": "Webserver for Camera app",
   "type": "module",
-  "main": "index.js",
+  "main": "index.mjs",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.mjs"
   },
   "author": "Camera Guys",
   "license": "GPL-3.0-only",
