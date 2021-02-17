@@ -15,6 +15,7 @@ import org.opencv.videoio.VideoWriter;
 
 import javax.swing.*;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -38,7 +39,12 @@ public class ClientWindow {
     private Mat diffFrame, displayFrame;
     private int stage = 0;
     private boolean outlineSmallerContours = false, outlineAll = true;
+
     private VideoWriter writer = null;
+    private File outFile = null; //Set upon motion detected.
+
+    private boolean motionDetected = false;
+    private long initialMotion = 0l;
     private long lastMotion = 0l;
 
     public ArrayList<Rect> findContours(Mat outmat) {
@@ -134,6 +140,15 @@ public class ClientWindow {
                 List<Rect> array = findContours(diffFrame);
                 int index = 0;
                 if (array.size() > 0) { // Apply the rectangles to the displayFrame
+                    if (!motionDetected) {
+                        System.out.println("Detected motion. Writing video.");
+                        initialMotion = System.currentTimeMillis();
+                        System.out.println(DateUtils.formatString(initialMotion));
+                        outFile = new File("footage", DateUtils.formatString(initialMotion) + ".mp4");
+                    }
+
+                    motionDetected = true;
+                    lastMotion = System.currentTimeMillis();
 
                     for (Rect rect : array) {
                         boolean isLast = index++ == array.size() - 1;
@@ -144,7 +159,24 @@ public class ClientWindow {
                                 thickness);
                     }
 
-                    processVideo(displayFrame);
+                }
+
+                if (motionDetected) {
+                    //If it's been at least 3 seconds since the last motion and there hasn't been sustained motion, scrap the recording.
+                    if (System.currentTimeMillis() - initialMotion >= 3000 && lastMotion - initialMotion < 2000) {
+                        System.out.println("Deleting useless video.");
+                        stopVideo();
+                        outFile.delete();
+                    } else {
+
+                        //If there has been motion in the last 10 seconds, process the video.
+                        if (System.currentTimeMillis() - lastMotion < TimeUnit.SECONDS.toMillis(10))
+                            processVideo(displayFrame);
+                        else {
+                            System.out.println("Motion has ceased.");
+                            stopVideo();
+                        }
+                    }
                 }
 
                 if (((int) slider.getValue()) == 4) processingFrame = displayFrame.clone();
@@ -187,15 +219,17 @@ public class ClientWindow {
     public void setClosed() {
         stopFrames();
         stopVideo();
-        if(httpStreamService != null && httpStreamService.isRunning())
-        httpStreamService.stopServer();
+        if (httpStreamService != null && httpStreamService.isRunning())
+            httpStreamService.stopServer();
     }
 
     private void processVideo(Mat frame) {
         if (writer == null || !writer.isOpened()) {
 //            int fourcc = VideoWriter.fourcc('M', 'P', '4', 'V');
             int fourcc = VideoWriter.fourcc('H', '2', '6', '4');
-            writer = new VideoWriter("test.mp4", fourcc, 1000d / 33d, frame.size());
+            if (!outFile.exists())
+                outFile.getParentFile().mkdirs();
+            writer = new VideoWriter(outFile.getAbsolutePath(), fourcc, 1000d / 33d, frame.size());
         }
 
         if (writer.isOpened())
@@ -206,6 +240,7 @@ public class ClientWindow {
     }
 
     private void stopVideo() {
+        motionDetected = false;
         if (writer != null && writer.isOpened())
             writer.release();
     }
