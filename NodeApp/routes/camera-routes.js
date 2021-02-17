@@ -36,8 +36,7 @@ const camera_routes = [
       try {
         // TODO: search for all streams in the database and return them.
         // lines 38-52 are static data and should be removed later
-        return res.status(200).json({
-          streams: [
+        return res.status(200).json([
             {
               id: "1234",
               stream_url: "https://google.com",
@@ -48,8 +47,7 @@ const camera_routes = [
               stream_url: "https://google.com",
               title: "Test 2",
             },
-          ],
-        });
+          ]);
       } catch (err) {
         return res.status(500).json({ error: err });
       }

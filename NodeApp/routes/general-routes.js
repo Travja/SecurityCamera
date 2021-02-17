@@ -1,4 +1,5 @@
 import eRequestType from "../enums/eRequestType.js";
+import CameraRoutes from "../routes/camera-routes.js";
 
 /**
  * general route objects as an array 
@@ -17,6 +18,7 @@ const general_routes = [
     handler: (req, res) => {},
     callback: (req, res) => {},
   },
+  ...CameraRoutes
 ];
 
 export default general_routes;
