@@ -6,12 +6,15 @@ export default class Recordings extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            recordings: this.getRecordings()
+            recordings: []
         };
+        
+        this.getRecordings = this.getRecordings.bind();
     }
-
-    componentDidMount() {
+    
+    async componentDidMount() {
         this.mounted = true;
+        this.setState({recording: await this.getRecordings()});
     }
 
     componentWillUnmount() {

@@ -39,12 +39,12 @@ const camera_routes = [
         return res.status(200).json([
             {
               id: "1234",
-              stream_url: "https://google.com",
+              url: "https://www.w3schools.com/html/mov_bbb.mp4",
               title: "Test",
             },
             {
               id: "12345",
-              stream_url: "https://google.com",
+              url: "https://www.w3schools.com/html/mov_bbb.mp4",
               title: "Test 2",
             },
           ]);

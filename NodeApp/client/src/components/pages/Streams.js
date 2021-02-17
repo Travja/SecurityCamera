@@ -6,12 +6,15 @@ export default class Streams extends Component {
   constructor(props) {
     super(props);
     this.state = {
-        streams: this.getStreams()
+        streams: []
     };
+
+    this.getStreams = this.getStreams.bind(this);
   }
 
-  componentDidMount() {
+  async componentDidMount() {
     this.mounted = true;
+    this.setState({streams: await this.getStreams()});
   }
 
   componentWillUnmount() {
@@ -36,7 +39,7 @@ export default class Streams extends Component {
             </header>
             <article>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", justifyItems: "center", gap:"45px" }}>
-                    {this.streams}
+                    {this.state.streams}
                 </div>
             </article>
         </div>
