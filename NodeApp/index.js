@@ -21,13 +21,13 @@ app.use(bodyParser.urlencoded({ limit: "50mb", extended: true }));
 new ConfigRoutes(app);
 
 // client setup and routing
-if (NODE_ENV === "production") {
-  const __dirname = dirname(fileURLToPath(import.meta.url));
-  app.use(express.static("client/build"));
-  app.get("*", (req, res) => {
-    return res.sendFile(path.join(__dirname, "client/build/index.html"));
-  });
-}
+// if (NODE_ENV === "production") {
+//   const __dirname = dirname(fileURLToPath(import.meta.url));
+//   app.use(express.static("client/build"));
+//   app.get("*", (req, res) => {
+//     return res.sendFile(path.join(__dirname, "client/build/index.html"));
+//   });
+// }
 
 // start to listen
 app.listen(PORT, () => console.log(`Listening on port: ${PORT}`));
