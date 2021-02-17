@@ -1,5 +1,6 @@
 import general_routes from "../routes/general-routes.js";
 import notification_routes from "../routes/notification-controller.js";
+import camera_routes from "../routes/camera-routes.js";
 
 /**
  * Configures the routes for the api and chains
@@ -12,7 +13,9 @@ class ConfigRoutes {
    */
   constructor(instance) {
     this.app = instance;
-    this.configureRoutes(general_routes.concat(notification_routes));
+    this.configureRoutes(
+      general_routes.concat(notification_routes).concat(camera_routes)
+    );
   }
 
   /**
