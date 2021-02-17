@@ -1,0 +1,8 @@
+.page header {
+    padding: 1% 2%;
+}
+
+.page>article {
+    width: 92%;
+    margin: 0px 4%;
+}

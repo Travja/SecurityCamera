@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 
-export default class Feeds extends Component {
+export default class Settings extends Component {
   constructor(props) {
     super(props);
     this.state = {};
@@ -15,6 +15,6 @@ export default class Feeds extends Component {
   }
 
   render() {
-    return <div>its the feeds page!</div>;
+    return <div>its the settings page!</div>;
   }
 }

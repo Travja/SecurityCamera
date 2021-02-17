@@ -6,6 +6,6 @@
 */node_modules/
 lib/
 JavaApp/lib/
-package-lock.json
+*/package-lock.json
 *.mp4
 */footage/

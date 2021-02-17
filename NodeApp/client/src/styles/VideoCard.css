@@ -1,0 +1,49 @@
+.video-card {
+    background-color: white;
+    box-shadow: 0px 2px 8px 0px rgba(0, 0, 0, 0.20);
+    width: 100%;
+}
+
+.video-card .video {
+    width: 100%;
+    aspect-ratio: 16/9;
+}
+
+.video-card .video video {
+    object-fit: fill;
+}
+
+.video-card .video video:focus {
+    outline: none;
+}
+
+.video-card .video video:fullscreen {
+    object-fit: contain;
+}
+
+.video-card::after {
+    content: '';
+    display: block;
+    height: 4px;
+    background: rgb(84, 118, 254);
+    background: linear-gradient(90deg, rgba(84, 118, 254, 1) 0%, rgba(42, 59, 127, 1) 74%);
+}
+
+.video-card>footer {
+    padding: 3% 3%;
+}
+
+.video-card>footer p {
+    margin: 0;
+}
+
+.video-card footer p {
+    font-size: 1.25em;
+    min-height: 50px;
+}
+
+.video-card .recording-card-content {
+    display: grid;
+    grid-template-columns: 1fr 48px;
+    align-items: center;
+}
