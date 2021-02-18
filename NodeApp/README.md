@@ -6,14 +6,30 @@
 ## Install
 Ensure you have node and npm installed.
 
-Once you have node and npm go to `client` and run
-`npm install`
-once you've done that you can run
-`npm start`
-That will start the react development server.
-However, if you want to run it with the server run
-`npm run build`
-After that cd back to the root of the NodeApp and run
-`npm install`
-`node index.js`
+Then inside of NodeApp run
+```
+npm install
+```
+follwed by going to client and running
+```
+npm install
+```
 
+After that return to NodeApp and then you can either build the app or start a dev server.
+
+### Building
+After installing you can go to NodeApp and run
+```
+npm start
+```
+There should then be a `build` folder with the built project. You could then cd into there and run 
+```
+node index.mjs
+```
+
+### Development Server
+After installing you can go to the NodeApp and run
+```
+npm run dev
+```
+It should then start the dev server. A few notes, the client will hot reload, but server changes will not hot reload.
