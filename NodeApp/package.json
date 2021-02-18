@@ -18,6 +18,7 @@
     "cookie-parser": "^1.4.5",
     "cors": "^2.8.5",
     "dotenv": "^8.2.0",
+    "engine.io": "^4.1.1",
     "express": "^4.17.1",
     "gulp-nodemon": "^2.5.0",
     "mailgen": "^2.0.14",
@@ -28,6 +29,7 @@
     "@babel/cli": "^7.12.16",
     "@babel/core": "^7.12.16",
     "@babel/preset-env": "^7.12.16",
+    "engine.io-rooms": "^0.2.0",
     "gulp": "^4.0.2",
     "nodemailer": "^6.4.17"
   }

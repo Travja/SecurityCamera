@@ -12,6 +12,13 @@ import multer from "multer";
 const app = express();
 const { ConfigRoutes } = routes;
 
+//Engine IO initialize
+const Rooms = require("engine.io-rooms");
+const engine = require("engine.io");
+const port = 5000;
+const http = require("http").createServer(app)
+var server = engine.attach(http);
+
 // declare port
 const PORT = ENV_PORT || 42069;
 
