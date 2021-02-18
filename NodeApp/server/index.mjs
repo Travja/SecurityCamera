@@ -6,6 +6,7 @@ import { NODE_ENV, PORT as ENV_PORT } from "./keys.js";
 import path, { dirname } from "path";
 import { fileURLToPath } from "url";
 import cors from "cors";
+import multer from "multer";
 
 // gather required frameworks and configurations
 const app = express();
@@ -15,10 +16,11 @@ const { ConfigRoutes } = routes;
 const PORT = ENV_PORT || 42069;
 
 if (NODE_ENV === "development") {
-    app.use(cors());
+  app.use(cors());
 }
 
 // app setup
+app.use(multer().any());
 app.use(bodyParser.json({ limit: "50mb" }));
 app.use(bodyParser.urlencoded({ limit: "50mb", extended: true }));
 // spin up configurations
