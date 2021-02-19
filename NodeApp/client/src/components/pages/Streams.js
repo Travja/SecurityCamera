@@ -1,30 +1,37 @@
 import React, { Component } from "react";
 import { StreamingCard } from "../StreamingCard";
+import axios from "axios";
 
 export default class Streams extends Component {
   constructor(props) {
     super(props);
-    this.state = {};
+    this.state = {
+        streams: []
+    };
+
+    this.getStreams = this.getStreams.bind(this);
   }
 
-  componentDidMount() {
+  async componentDidMount() {
     this.mounted = true;
+    this.setState({streams: await this.getStreams()});
   }
 
   componentWillUnmount() {
     this.mounted = false;
   }
 
-  render() {
-    const cards = [];
-    for (let i = 0; i < 3*6; i++) {
-        const imageUrl = "http://localhost:8080/";
-        cards.push(
-            <StreamingCard title={new Date().toString()} download={imageUrl} save="street" key={i}>
-                <div style={{width: "100%", height: "100%", backgroundImage: `url(${imageUrl})`, backgroundSize: "contain", backgroundRepeat: "no-repeat", backgroundPosition: "center"}}></div>
+  async getStreams() {
+      return await (await axios.get("/api/streams")).data.map(stream => {
+          return (
+            <StreamingCard title={stream.title ? stream.title : new Date().toDateString()} key={stream.id}>
+                <video src={stream.url} width="100%" height="100%"></video>
             </StreamingCard>
-        );
-    }
+          );
+      });
+  }
+  
+  render() {
     return (
         <div className="page">
             <header>
@@ -32,7 +39,7 @@ export default class Streams extends Component {
             </header>
             <article>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", justifyItems: "center", gap:"45px" }}>
-                    {cards}
+                    {this.state.streams}
                 </div>
             </article>
         </div>
