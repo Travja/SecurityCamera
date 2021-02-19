@@ -13,9 +13,10 @@ const app = express();
 const { ConfigRoutes } = routes;
 
 //Engine IO initialize
-const Rooms = require("engine.io-rooms");
-const engine = require("engine.io");
-const http = require("http").createServer(app)
+import Rooms from "engine.io-rooms";
+import engine from "engine.io";
+import httpServer from "http";
+const http = httpServer.createServer(app);
 var server = engine.attach(http);
 
 // Add rooms functionality
