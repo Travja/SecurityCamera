@@ -49,27 +49,30 @@
             <artifactId>netty-socketio</artifactId>
             <version>1.5.0</version>
         </dependency>
-
-
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.12</version>
+        </dependency>
     </dependencies>
 
     <build>
-<!--        <resources>-->
-<!--            <resource>-->
-<!--                <filtering>false</filtering>-->
-<!--                <directory>${basedir}/src/main/resources</directory>-->
-<!--&lt;!&ndash;                <includes>&ndash;&gt;-->
-<!--&lt;!&ndash;                    <include>opencv_java3413.dll</include>&ndash;&gt;-->
-<!--&lt;!&ndash;                </includes>&ndash;&gt;-->
-<!--            </resource>-->
-<!--        </resources>-->
+        <!--        <resources>-->
+        <!--            <resource>-->
+        <!--                <filtering>false</filtering>-->
+        <!--                <directory>${basedir}/src/main/resources</directory>-->
+        <!--&lt;!&ndash;                <includes>&ndash;&gt;-->
+        <!--&lt;!&ndash;                    <include>opencv_java3413.dll</include>&ndash;&gt;-->
+        <!--&lt;!&ndash;                </includes>&ndash;&gt;-->
+        <!--            </resource>-->
+        <!--        </resources>-->
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>8</source>
-                    <target>8</target>
+                    <source>9</source>
+                    <target>9</target>
                 </configuration>
             </plugin>
             <plugin>
