@@ -10,3 +10,4 @@ JavaApp/lib/
 *.mp4
 */footage/
 NodeApp/build
+server.conf

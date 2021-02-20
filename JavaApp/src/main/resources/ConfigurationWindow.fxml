@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox minHeight="-Infinity" minWidth="-Infinity" prefHeight="485.0" prefWidth="490.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cameraguys.project.ConfigurationWindow">
+   <VBox prefHeight="200.0" prefWidth="100.0">
+      <children>
+         <HBox>
+            <children>
+               <Label text="Your Name:">
+                  <HBox.margin>
+                     <Insets bottom="10.0" left="10.0" right="10.0" top="14.0" />
+                  </HBox.margin>
+               </Label>
+               <TextField fx:id="nameField" promptText="John Doe">
+                  <HBox.margin>
+                     <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                  </HBox.margin>
+               </TextField>
+            </children>
+         </HBox>
+         <HBox layoutX="10.0" layoutY="10.0">
+            <children>
+               <Label text="Email:">
+                  <HBox.margin>
+                     <Insets bottom="10.0" left="10.0" right="10.0" top="14.0" />
+                  </HBox.margin>
+               </Label>
+               <TextField fx:id="emailField" promptText="johndoe@example.com">
+                  <HBox.margin>
+                     <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                  </HBox.margin>
+               </TextField>
+            </children>
+         </HBox>
+         <HBox layoutX="10.0" layoutY="55.0">
+            <children>
+               <Label text="Password:">
+                  <HBox.margin>
+                     <Insets bottom="10.0" left="10.0" right="10.0" top="14.0" />
+                  </HBox.margin>
+               </Label>
+               <PasswordField fx:id="passwordField" promptText="Password">
+                  <HBox.margin>
+                     <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                  </HBox.margin>
+               </PasswordField>
+            </children>
+         </HBox>
+         <HBox layoutX="10.0" layoutY="55.0">
+            <children>
+               <Label text="Server URL:">
+                  <HBox.margin>
+                     <Insets bottom="10.0" left="10.0" right="10.0" top="14.0" />
+                  </HBox.margin>
+               </Label>
+               <TextField fx:id="serverField" promptText="camera.travja.win">
+                  <HBox.margin>
+                     <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                  </HBox.margin>
+               </TextField>
+            </children>
+         </HBox>
+      </children>
+   </VBox>
+    <AnchorPane minHeight="-Infinity" minWidth="-Infinity">
+        <children>
+            <GridPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                <columnConstraints>
+                    <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" percentWidth="25.0" prefWidth="100.0" />
+                    <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" percentWidth="25.0" prefWidth="100.0" />
+                    <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" percentWidth="25.0" prefWidth="100.0" />
+                    <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" percentWidth="25.0" prefWidth="100.0" />
+                </columnConstraints>
+                <Button fx:id="testConnBtn" contentDisplay="CENTER" mnemonicParsing="false" onAction="#testConnection" text="Test Connection" GridPane.columnIndex="1" />
+                <Button fx:id="okayBtn" contentDisplay="CENTER" mnemonicParsing="false" onAction="#apply" text="Okay" GridPane.columnIndex="2" />
+            <rowConstraints>
+               <RowConstraints />
+            </rowConstraints>
+            </GridPane>
+        </children>
+    </AnchorPane>
+</VBox>

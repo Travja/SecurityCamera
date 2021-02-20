@@ -2,7 +2,6 @@ import nodemailer from "nodemailer";
 import Mailgen from "mailgen";
 import { PORT } from "../keys.js";
 import eRequestType from "../enums/eRequestType.js";
-import fs from 'fs';
 
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
@@ -67,7 +66,7 @@ const notification_routes = [
               .json({ msg: "notification sent successfully" });
           })
           .catch((error) => {
-            return res.status(500).json({ error: error.message });
+            return res.status(500).json({ error });
           });
       } catch (err) {
         return res.status(500).json({ error: err.message });

@@ -1,5 +1,7 @@
 package cameraguys.project;
 
+import cameraguys.project.http.ConnectionInformation;
+import cameraguys.project.http.HttpFileUpload;
 import cameraguys.project.webserver.HttpStreamServer;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -16,7 +18,10 @@ import org.opencv.videoio.VideoWriter;
 import javax.swing.*;
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -25,6 +30,7 @@ import java.util.concurrent.TimeUnit;
 public class ClientWindow {
 
     private static final double MIN_AREA = 50;//Disturbance has to be more than this area to be identified.
+    private static final String NOTIFY_ENDPOINT = "/api/notify";
     static Timer tmrVideoProcess;
     private static HttpStreamServer httpStreamService;
     @FXML
@@ -39,13 +45,13 @@ public class ClientWindow {
     private Mat diffFrame, displayFrame;
     private int stage = 0;
     private boolean outlineSmallerContours = false, outlineAll = true;
-
     private VideoWriter writer = null;
     private File outFile = null; //Set upon motion detected.
-
-    private boolean motionDetected = false;
+    private boolean motionDetected = false,
+            sentNotif = false;
     private long initialMotion = 0l;
     private long lastMotion = 0l;
+    private ConnectionInformation connInfo = ConnectionInformation.load();
 
     public ArrayList<Rect> findContours(Mat outmat) {
         Mat v = new Mat();
@@ -161,6 +167,13 @@ public class ClientWindow {
 
                 }
 
+                if (((int) slider.getValue()) == 4) processingFrame = displayFrame.clone();
+
+                MatOfByte buffer = new MatOfByte();
+                Imgcodecs.imencode(".png", displayFrame, buffer);
+                MatOfByte buf2 = new MatOfByte();
+                Imgcodecs.imencode(".png", processingFrame, buf2);
+
                 if (motionDetected) {
                     //If it's been at least 3 seconds since the last motion and there hasn't been sustained motion, scrap the recording.
                     if (System.currentTimeMillis() - initialMotion >= 3000 && lastMotion - initialMotion < 2000) {
@@ -168,7 +181,10 @@ public class ClientWindow {
                         stopVideo();
                         outFile.delete();
                     } else {
-
+                        if (!sentNotif && System.currentTimeMillis() - initialMotion >= 3000) {
+                            sentNotif = true;
+                            sendEmail(buffer);
+                        }
                         //If there has been motion in the last 10 seconds, process the video.
                         if (System.currentTimeMillis() - lastMotion < TimeUnit.SECONDS.toMillis(10))
                             processVideo(displayFrame);
@@ -179,13 +195,6 @@ public class ClientWindow {
                     }
                 }
 
-                if (((int) slider.getValue()) == 4) processingFrame = displayFrame.clone();
-
-                MatOfByte buffer = new MatOfByte();
-                Imgcodecs.imencode(".png", displayFrame, buffer);
-                MatOfByte buf2 = new MatOfByte();
-                Imgcodecs.imencode(".png", processingFrame, buf2);
-
                 httpStreamService.imag = displayFrame;
                 currentFrame.setImage(new Image(new ByteArrayInputStream(buffer.toArray())));
                 filters.setImage(new Image(new ByteArrayInputStream(buf2.toArray())));
@@ -194,6 +203,35 @@ public class ClientWindow {
                 System.err.println("Camera feed not started!");
             }
         };
+    }
+
+    private void sendEmail(MatOfByte buffer) {
+        Thread thread = new Thread(() -> {
+            System.out.println("Uploading thumbnail.");
+            File file = new File("footage", "tmp.png");
+            try {
+                FileOutputStream out = new FileOutputStream(file);
+                ByteArrayInputStream in = new ByteArrayInputStream(buffer.toArray());
+                int data;
+                while ((data = in.read()) != -1) {
+                    out.write(data);
+                }
+
+                out.close();
+                in.close();
+                System.out.println("Saved image. Executing post");
+
+                HashMap<String, String> formData = new HashMap<>();
+                formData.put("name", connInfo.getName());
+                formData.put("userEmail", connInfo.getEmail());
+                HttpFileUpload imgData = new HttpFileUpload(connInfo.getUrl() + NOTIFY_ENDPOINT, file, formData);
+                imgData.uploadImage();
+            } catch (IOException e) {
+                System.err.println("Could not send email notification!");
+                e.printStackTrace();
+            }
+        });
+        thread.start();
     }
 
     private void stopFrames() {
@@ -240,6 +278,7 @@ public class ClientWindow {
     }
 
     private void stopVideo() {
+        sentNotif = false;
         motionDetected = false;
         if (writer != null && writer.isOpened())
             writer.release();

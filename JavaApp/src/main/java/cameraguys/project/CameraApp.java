@@ -2,6 +2,7 @@ package cameraguys.project;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
@@ -32,20 +33,39 @@ public class CameraApp extends Application {
         launch(args);
     }
 
-    @Override
-    public void start(Stage primaryStage) {
+    public static void openCameraWindow(Stage primaryStage) {
 
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getClassLoader().getResource("ClientWindow.fxml"));
+            FXMLLoader loader = new FXMLLoader(CameraApp.class.getClassLoader().getResource("ClientWindow.fxml"));
             GridPane root = loader.load();
             ClientWindow controller = loader.getController();
 
             Scene scene = new Scene(root);
             primaryStage.setTitle("Camera Test");
             primaryStage.setScene(scene);
-            primaryStage.show();
 
             primaryStage.setOnCloseRequest(we -> controller.setClosed());
+            primaryStage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    @Override
+    public void start(Stage primaryStage) {
+
+        try {
+            if (!new File("server.conf").exists()) {
+                FXMLLoader confLoader = new FXMLLoader(getClass().getClassLoader().getResource("ConfigurationWindow.fxml"));
+                Parent confRoot = confLoader.load();
+
+                primaryStage.setTitle("Configure Your Camera!");
+                primaryStage.setScene(new Scene(confRoot));
+                primaryStage.show();
+            } else {
+                openCameraWindow(primaryStage);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
