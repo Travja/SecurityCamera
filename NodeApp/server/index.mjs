@@ -13,9 +13,11 @@ const app = express();
 const { ConfigRoutes } = routes;
 
 //Engine IO initialize
-const Rooms = require("engine.io-rooms");
-const engine = require("engine.io");
-const http = require("http").createServer(app)
+import Rooms from "engine.io-rooms";
+import engine from "engine.io";
+import httpServer from "http";
+import SQLConfig from "./configurations/SQLConfig.js";
+const http = httpServer.createServer(app);
 var server = engine.attach(http);
 
 // Add rooms functionality
@@ -34,6 +36,7 @@ app.use(bodyParser.json({ limit: "50mb" }));
 app.use(bodyParser.urlencoded({ limit: "50mb", extended: true }));
 // spin up configurations
 new ConfigRoutes(app);
+new SQLConfig();
 
 // client setup and routing
 if (NODE_ENV === "production") {
