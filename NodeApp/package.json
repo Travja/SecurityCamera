@@ -17,6 +17,7 @@
     "body-parser": "^1.19.0",
     "cookie-parser": "^1.4.5",
     "cors": "^2.8.5",
+    "dobject-routing": "^0.1.10",
     "dotenv": "^8.2.0",
     "engine.io": "^4.1.1",
     "express": "^4.17.1",

@@ -3,7 +3,7 @@ import nodemon from 'gulp-nodemon';
 import {exec} from 'child_process';
 import dotenv from 'dotenv';
 
-dotenv.config();
+dotenv.config({path: "./server/.env"});
 
 export function startServer(done) {
     return nodemon({
