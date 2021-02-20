@@ -14,12 +14,9 @@ const app = express();
 import Rooms from "engine.io-rooms";
 import engine from "engine.io";
 import httpServer from "http";
-<<<<<<< HEAD
 import SQLConfig from "./configurations/SQLConfig.js";
 import buildRouting from "dobject-routing";
 import general_routes from "./routes/general-routes.js";
-=======
->>>>>>> ca6b1e66d9bd0dd6c36b4953329a6f699088de85
 const http = httpServer.createServer(app);
 var server = engine.attach(http);
 
