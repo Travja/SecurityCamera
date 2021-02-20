@@ -1,7 +1,6 @@
 // import modules
 import express from "express";
 import bodyParser from "body-parser";
-import routes from "./configurations/routes.js";
 import { NODE_ENV, PORT as ENV_PORT } from "./keys.js";
 import path, { dirname } from "path";
 import { fileURLToPath } from "url";
@@ -10,13 +9,14 @@ import multer from "multer";
 
 // gather required frameworks and configurations
 const app = express();
-const { ConfigRoutes } = routes;
 
 //Engine IO initialize
 import Rooms from "engine.io-rooms";
 import engine from "engine.io";
 import httpServer from "http";
 import SQLConfig from "./configurations/SQLConfig.js";
+import buildRouting from "dobject-routing";
+import general_routes from "./routes/general-routes.js";
 const http = httpServer.createServer(app);
 var server = engine.attach(http);
 
@@ -35,7 +35,7 @@ app.use(multer().any());
 app.use(bodyParser.json({ limit: "50mb" }));
 app.use(bodyParser.urlencoded({ limit: "50mb", extended: true }));
 // spin up configurations
-new ConfigRoutes(app);
+app.use('/api', buildRouting.default([general_routes]));
 new SQLConfig();
 
 // client setup and routing
