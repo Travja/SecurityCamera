@@ -2,6 +2,7 @@ import nodemailer from "nodemailer";
 import Mailgen from "mailgen";
 import { PORT } from "../keys.js";
 import eRequestType from "../enums/eRequestType.js";
+import fs from 'fs';
 
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
@@ -26,7 +27,9 @@ const notification_routes = [
     type: eRequestType.POST,
     handler: async (req, res) => {
       try {
-        const { name, userEmail, filename, path } = req.body;
+        const { name, userEmail } = req.body;
+        const file = req.files[0]; //Can be uploaded under whatever key value.
+        console.log(file.buffer);
         let response = {
           body: {
             name,
@@ -50,9 +53,9 @@ const notification_routes = [
           html: await MailGenerator.generate(response),
           attachments: [
             {
-              filename: filename,
-              path: path,
-              contentType: "image/jpg",
+              filename: file.originalname,
+              content: file.buffer,
+              contentType: file.mimetype,
             },
           ],
         };
