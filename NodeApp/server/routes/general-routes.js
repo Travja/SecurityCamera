@@ -1,4 +1,5 @@
-import eRequestType from "../enums/eRequestType.js";
+//@ts-check
+import { ERequestType } from "dobject-routing";
 import CameraRoutes from "../routes/camera-routes.js";
 
 /**
@@ -7,18 +8,25 @@ import CameraRoutes from "../routes/camera-routes.js";
  * e.g. account-routes.js <- only has routes for the account
  * This file is solely for `general` routes (login, logout...)
  */
-const general_routes = [
+/**
+ * @type {import("dobject-routing").IRouter}
+ */
+const general_routes = {
   /**
    * Does nothing but set
    * the route formatting example
    */
-  {
-    url: "/api",
-    type: eRequestType.GET,
-    handler: (req, res) => {},
-    callback: (req, res) => {},
-  },
-  ...CameraRoutes
-];
+  routes: [
+      {
+        method: ERequestType.GET,
+        handlers:[
+            (req, res) => {res.send("Hello");},
+            (req, res) => {res.send("Hello");}
+        ],
+        routes: [...CameraRoutes]
+      }
+  ],
+  routers:[]
+};
 
 export default general_routes;
