@@ -42,7 +42,7 @@ public class BroadcasterClient {
                 System.out.println(Arrays.toString(objects));
                 System.out.println(socket);
                 try {
-                    String data = new JSONObject().put("event","broadcaster").toString();
+                    String data = new JSONObject().put("event", "broadcaster").toString();
                     System.out.println(data);
                     socket.send("ping");
                     //socket.send(data);
@@ -54,12 +54,12 @@ public class BroadcasterClient {
                     public void call(Object... args) {
 
                         try {
-                            JSONObject data =  new JSONObject(args[0].toString());
+                            JSONObject data = new JSONObject(args[0].toString());
                             String event = data.getString("event");
                             String id;
                             String message;
 
-                            switch (event){
+                            switch (event) {
 
                                 case "watcher":
 
@@ -71,24 +71,24 @@ public class BroadcasterClient {
                                     RTCConfiguration config = new RTCConfiguration();
                                     config.iceServers.add(iceServer);
 
-                                    RTCPeerConnection peerConnection= factory.createPeerConnection(config, new PeerConnectionObserver() {
+                                    RTCPeerConnection peerConnection = factory.createPeerConnection(config, new PeerConnectionObserver() {
                                         @Override
                                         public void onIceCandidate(RTCIceCandidate rtcIceCandidate) {
                                             //add the stream to the track
-                                            socket.emit("candidate",id,rtcIceCandidate);
+                                            socket.emit("candidate", id, rtcIceCandidate);
                                         }
                                     });
 
-                                    peerConnections.put(id,peerConnection);
+                                    peerConnections.put(id, peerConnection);
 
                                     RTCOfferOptions offerOptions = new RTCOfferOptions();
-                                    peerConnection.createOffer(offerOptions,new CreateSessionDescriptionObserver() {
+                                    peerConnection.createOffer(offerOptions, new CreateSessionDescriptionObserver() {
                                         @Override
                                         public void onSuccess(RTCSessionDescription rtcSessionDescription) {
                                             peerConnection.setLocalDescription(rtcSessionDescription, new SetSessionDescriptionObserver() {
                                                 @Override
                                                 public void onSuccess() {
-                                                    socket.emit("offer",id, peerConnection.getLocalDescription());
+                                                    socket.emit("offer", id, peerConnection.getLocalDescription());
                                                 }
 
                                                 @Override
@@ -146,7 +146,8 @@ public class BroadcasterClient {
             @Override
             public void call(Object... objects) {
                 Exception e = (Exception) objects[0];
-                System.out.println("Connect error:" + Arrays.toString(e.getStackTrace()));
+                System.out.println("Connect error: " + e.getMessage());
+                e.printStackTrace();
             }
         });
 
