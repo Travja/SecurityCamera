@@ -3,6 +3,10 @@ import { StreamingCard } from "../StreamingCard";
 import { connect } from "react-redux";
 import StreamsAPI from "../../api/Streams";
 
+/**
+ * Streams page. This is a protected route.
+ * To access the logged in user directly: `this.props.user`
+ */
 class Streams extends Component {
   constructor(props) {
     super(props);

@@ -2,6 +2,10 @@ import React, { Component } from "react";
 import { connect } from "react-redux";
 import { Redux } from "../../redux/redux-types";
 
+/**
+ * Settings page. This is a protected route. 
+ * To access the logged in user directly: `this.props.user`
+ */
 class Settings extends Component {
   constructor(props) {
     super(props);

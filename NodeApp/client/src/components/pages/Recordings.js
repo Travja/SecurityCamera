@@ -3,6 +3,10 @@ import { RecordingCard } from "../RecordingCard";
 import { connect } from "react-redux";
 import RecordingAPI from "../../api/Recordings";
 
+/**
+ * Recordings page. This is a protected route. 
+ * To access the logged in user directly: `this.props.user`
+ */
 class Recordings extends Component {
   constructor(props) {
     super(props);
