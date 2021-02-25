@@ -8,7 +8,7 @@
     <artifactId>Camera</artifactId>
     <version>1.0-SNAPSHOT</version>
     <properties>
-        <java.version>1.8</java.version>
+        <java.version>11</java.version>
     </properties>
     <repositories>
         <repository>
@@ -40,20 +40,20 @@
         </dependency>
         <dependency>
             <groupId>io.socket</groupId>
-            <artifactId>socket.io-client</artifactId>
+            <artifactId>engine.io-client</artifactId>
             <version>2.0.0</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/com.corundumstudio.socketio/netty-socketio -->
         <dependency>
-            <groupId>com.corundumstudio.socketio</groupId>
-            <artifactId>netty-socketio</artifactId>
-            <version>1.5.0</version>
+            <groupId>dev.onvoid.webrtc</groupId>
+            <artifactId>webrtc-java</artifactId>
+            <version>0.2.0</version>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>1.18.12</version>
         </dependency>
+
     </dependencies>
 
     <build>
@@ -71,8 +71,8 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>9</source>
-                    <target>9</target>
+                    <source>11</source>
+                    <target>11</target>
                 </configuration>
             </plugin>
             <plugin>

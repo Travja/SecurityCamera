@@ -1,6 +1,7 @@
-//@ts-check
-import { ERequestType } from "dobject-routing";
+import pkg from "dobject-routing";
 import CameraRoutes from "../routes/camera-routes.js";
+
+const { ERequestType } = pkg;
 
 /**
  * general route objects as an array 
