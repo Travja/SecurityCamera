@@ -29,6 +29,8 @@ prepareData = (event, data) => {
 socket.on("open", () => {
     console.log(`Connection: ${socket.id}`);
 
+    socket.send(prepareData("room", {room_id: "room1"}));
+
     let exData,id,message;
 
     socket.on("message", (data) => {
