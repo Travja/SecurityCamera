@@ -1,10 +1,9 @@
 import pkg from "dobject-routing";
-import { request } from "express";
 import { useSql } from "../configurations/SQLConfig.js";
 import { authenticateUser } from "./authentication.js";
 
 const { ERequestType } = pkg;
-// let request = await(await useSql()).request();
+let request = await(await useSql()).request();
 /**
  * @type {import("dobject-routing").IRoute[]}
  */
