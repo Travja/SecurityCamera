@@ -1,13 +1,14 @@
-import React, { Component } from "react";
+import React, { Component, Fragment } from "react";
 import { StreamingCard } from "../StreamingCard";
-import axios from "axios";
 import { connect } from "react-redux";
+import StreamsAPI from "../../api/Streams";
 
 class Streams extends Component {
   constructor(props) {
     super(props);
     this.state = {
       streams: [],
+      loading: true,
     };
 
     this.getStreams = this.getStreams.bind(this);
@@ -15,7 +16,7 @@ class Streams extends Component {
 
   async componentDidMount() {
     this.mounted = true;
-    this.setState({ streams: await this.getStreams() });
+    this.getStreams();
   }
 
   componentWillUnmount() {
@@ -23,35 +24,57 @@ class Streams extends Component {
   }
 
   async getStreams() {
-    return await (await axios.get("/api/streams")).data.map((stream) => {
-      return (
-        <StreamingCard
-          title={stream.title ? stream.title : new Date().toDateString()}
-          key={stream.id}
-        >
-          <video src={stream.url} width="100%" height="100%"></video>
-        </StreamingCard>
-      );
+    StreamsAPI.getStreams((err, streams) => {
+      if (err)
+        this.setState({ loading: false }, () =>
+          console.log("Failed to get streams", err.error)
+        );
+      else
+        this.setState({
+          loading: false,
+          streams: streams.map((stream) => {
+            return (
+              <StreamingCard
+                title={stream.title ? stream.title : new Date().toDateString()}
+                key={stream.id}
+              >
+                <video src={stream.url} width="100%" height="100%"></video>
+              </StreamingCard>
+            );
+          }),
+        });
     });
   }
 
   render() {
+    const { loading, streams } = this.state;
+
     return (
       <div className="page">
         <header>
           <h3>Streams</h3>
         </header>
         <article>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr 1fr",
-              justifyItems: "center",
-              gap: "45px",
-            }}
-          >
-            {this.state.streams}
-          </div>
+          {loading ? (
+            <p>Loading...</p>
+          ) : (
+            <Fragment>
+              {streams.length === 0 ? (
+                <h4>No Streams</h4>
+              ) : (
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr 1fr",
+                    justifyItems: "center",
+                    gap: "45px",
+                  }}
+                >
+                  {streams}
+                </div>
+              )}
+            </Fragment>
+          )}
         </article>
       </div>
     );
