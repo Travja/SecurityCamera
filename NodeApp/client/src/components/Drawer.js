@@ -1,7 +1,7 @@
 import React from "react";
 import {NavLink} from "react-router-dom";
 import Icon from "@mdi/react";
-import {mdiCog, mdiFilmstripBoxMultiple, mdiHome, mdiVideoWireless} from "@mdi/js";
+import {mdiCog, mdiFilmstripBoxMultiple, mdiHome, mdiVideoWireless, mdiLogin} from "@mdi/js";
 
 export const DrawerItem = props => {
     return (
@@ -77,6 +77,7 @@ export default class Drawer extends React.Component {
                     <DrawerItem path="/recordings" icon={mdiFilmstripBoxMultiple} content="Recordings"/>
                     <DrawerItem path="/streams" icon={mdiVideoWireless} content="Streams"/>
                     <DrawerItem path="/settings" icon={mdiCog} content="Settings"/>
+                    <DrawerItem path="/login" icon={mdiLogin} content="Login"/>
                 </section>
             </aside>
         );
