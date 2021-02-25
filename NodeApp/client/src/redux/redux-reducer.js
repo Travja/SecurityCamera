@@ -9,8 +9,8 @@ import SecureLS from "secure-ls";
  */
 export const ls = new SecureLS({ encodingType: "aes" });
 
-const T_VAR = "@token";
-const RT_VAR = "@refreshToken";
+export const T_VAR = "@token";
+export const RT_VAR = "@refreshToken";
 
 const initial_state = {
   token: ls.get(T_VAR),
