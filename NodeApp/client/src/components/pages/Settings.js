@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
+import { Redux } from "../../redux/redux-types";
 
 class Settings extends Component {
   constructor(props) {
@@ -16,7 +17,16 @@ class Settings extends Component {
   }
 
   render() {
-    return <div>its the settings page!</div>;
+    const logout = () => {
+      this.props.dispatch({ type: Redux.LOGOUT, action: null });
+      window.location.href = "/";
+    };
+    return (
+      <div>
+        its the settings page!
+        <button onClick={logout}>Logout</button>
+      </div>
+    );
   }
 }
 
