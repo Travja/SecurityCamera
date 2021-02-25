@@ -36,6 +36,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 app.get("/broadcast", (req, res) => res.sendFile(path.join(__dirname, "socket_clients/broadcast.html")));
 app.get("/watcher", (req, res) => res.sendFile(path.join(__dirname, "socket_clients/index.html")));
 app.get("/watch.js", (req, res) => res.sendFile(path.join(__dirname, "socket_clients/watch.js")));
+app.get("/broadcast.js", (req, res) => res.sendFile(path.join(__dirname, "socket_clients/broadcast.js")));
 app.get("/engine.io.js", (req, res) => res.sendFile(path.join(__dirname, "socket_clients/engine.io.js")));
 // client setup and routing
 if (NODE_ENV === "production") {
@@ -77,7 +78,7 @@ server.on("connection", (socket) => {
             case "broadcaster":
                 console.log(`${getTime()} Broadcaster: ${socket.id}`);
                 broadcaster = socket.id;
-                socket.send(prepareData("broadcaster", null));
+                broadcast(prepareData("broadcaster", null));
                 break;
 
             case "watcher":
@@ -85,7 +86,7 @@ server.on("connection", (socket) => {
                 exData = {
                     "id": socket.id
                 }
-                // socket.room(broadcaster).send(prepareData("watcher", exData));
+                broadcast(prepareData("watcher", exData));
                 break;
 
             case "offer":
@@ -96,7 +97,7 @@ server.on("connection", (socket) => {
                     "id": socket.id,
                     "message": message
                 }
-                // socket.room(id).send(prepareData("offer", exData));
+                broadcast(prepareData("offer", exData));
                 break;
 
             case "answer":
@@ -108,7 +109,7 @@ server.on("connection", (socket) => {
                     "id": socket.id,
                     "message": message
                 }
-                // socket.room(id).send(prepareData("answer", exData));
+                broadcast(prepareData("answer", exData));
                 break;
             case "candidate":
                 console.log(`${getTime()} Candidate: ${socket.id}`);
@@ -118,14 +119,14 @@ server.on("connection", (socket) => {
                     "id": socket.id,
                     "message": message
                 }
-                // socket.room(id).send(prepareData("candidate", exData));
+                broadcast(prepareData("candidate", exData));
                 break;
             case "disconnect":
                 console.log(`${getTime()} Disconnect: ${socket.id}`);
                 exData = {
                     "id": socket.id
                 }
-                // socket.room(broadcaster).send(prepareData("watcher", exData));
+                broadcast(prepareData("watcher", exData));
                 break;
             case "ping":
                 console.log("Got ping!");
@@ -143,7 +144,7 @@ let broadcast = (data) => {
 
 let broadcastRoom = (room, data) => {
     for (let sock of sockets) {
-        if (sock.room = room) {
+        if (sock.room == room) {
             sock.send(data);
         }
     }
