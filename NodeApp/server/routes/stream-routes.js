@@ -3,7 +3,6 @@ import { useSql } from "../configurations/SQLConfig.js";
 import { authenticateUser } from "./authentication.js";
 
 const { ERequestType } = pkg;
-let request = await (await useSql()).request();
 /**
  * @type {import("dobject-routing").IRoute[]}
  */
@@ -22,6 +21,7 @@ const stream_routes = [
           const id = Number.parseInt(req.params.id);
           if (!id && id != NaN)
             return res.status(400).json({ error: "No stream id" });
+          let request = await (await useSql()).request();
           const result = await request.query`select * from Camera where CameraID = ${id} and Owner = ${req.user.UserID};`;
           res.send(result.recordset);
         } catch (err) {
@@ -41,6 +41,7 @@ const stream_routes = [
       authenticateUser,
       async (req, res) => {
         try {
+          let request = await (await useSql()).request();
           const result = await request.query`select * from Camera where Owner = ${req.user.UserID};`;
           return res.send(result.recordset);
         } catch (err) {
@@ -59,6 +60,7 @@ const stream_routes = [
     handlers: [
       authenticateUser,
       async (req, res) => {
+        let request = await (await useSql()).request();
         await request.query`insert into Camera (StreamURL, Name, Owner) values (${req.body.StreamURL}, ${req.body.Name}, ${req.user.UserID})`;
         return res.sendStatus(201);
       },
@@ -74,6 +76,7 @@ const stream_routes = [
     handlers: [
       authenticateUser,
       async (req, res) => {
+        let request = await (await useSql()).request();
         await request.query`UPDATE Camera SET StreamURL = ${req.body.StreamURL}, Name=${req.body.Name} WHERE CameraID = ${req.params.id}`;
         return res.sendStatus(200);
       },
@@ -89,9 +92,11 @@ const stream_routes = [
     handlers: [
       authenticateUser,
       async (req, res) => {
+        let request = await (await useSql()).request();
         let result = await request.query`select * from Camera where CameraID = ${req.params.id};`;
         if (req.user.UserID == result.recordset[0].UserID) {
-          await request.query`DELETE FROM Camera WHERE CameraID = ${req.params.id}`;
+          let request2 = await (await useSql()).request();
+          await request2.query`DELETE FROM Camera WHERE CameraID = ${req.params.id}`;
           return res.sendStatus(200);
         }
       },
