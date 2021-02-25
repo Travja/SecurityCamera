@@ -1,6 +1,5 @@
 // import and confugure dotenv
 import dotenv from "dotenv";
-import path from "path"
 const { config } = dotenv;
 config();
 // environment variables
