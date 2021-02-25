@@ -1,6 +1,7 @@
 import React, { Component } from "react";
+import { connect } from "react-redux";
 
-export default class Settings extends Component {
+class Settings extends Component {
   constructor(props) {
     super(props);
     this.state = {};
@@ -18,3 +19,8 @@ export default class Settings extends Component {
     return <div>its the settings page!</div>;
   }
 }
+
+const mapStateToProps = (state) => ({
+  token: state.token,
+});
+export default connect(mapStateToProps)(Settings);

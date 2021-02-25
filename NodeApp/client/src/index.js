@@ -3,12 +3,17 @@ import ReactDOM from "react-dom";
 import "./styles/index.css";
 import App from "./App";
 import ErrorBoundary from "./components/code-spliting/errorBoundary";
+// Redux
+import { createStore } from "redux";
+import { Provider } from "react-redux";
+import { reducer } from "./redux/redux-reducer";
+const store = createStore(reducer);
 
 ReactDOM.render(
-  <React.Fragment>
+  <Provider store={store}>
     <ErrorBoundary>
       <App />
     </ErrorBoundary>
-  </React.Fragment>,
+  </Provider>,
   document.getElementById("root")
 );

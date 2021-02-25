@@ -1,6 +1,7 @@
 import React, { Component } from "react";
+import { connect } from "react-redux";
 
-export default class Home extends Component {
+class Home extends Component {
   constructor(props) {
     super(props);
     this.state = {};
@@ -18,3 +19,8 @@ export default class Home extends Component {
     return <div>its the home page!</div>;
   }
 }
+
+const mapStateToProps = (state) => ({
+  token: state.token,
+});
+export default connect(mapStateToProps)(Home);
