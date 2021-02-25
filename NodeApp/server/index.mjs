@@ -8,11 +8,10 @@ import cors from "cors";
 import multer from "multer";
 import {Server} from "socket.io";
 //Engine IO initialize
-import * as http from "http";
+import httpServer from "http";
 // import SQLConfig from "./configurations/SQLConfig.js";
 import buildRouting from "dobject-routing";
 import general_routes from "./routes/general-routes.js";
-import * as http from "http";
 //import SQLConfig from "./configurations/SQLConfig.js";
 
 // gather required frameworks and configurations
@@ -49,8 +48,8 @@ if (NODE_ENV === "production") {
 }
 
 let broadcaster;
-const http = http.createServer(app);
-const io = Server(http);
+const http = httpServer.createServer(app);
+const io = new Server(http);
 
 io.sockets.on("error", e => console.log(e));
 io.sockets.on("connection", socket => {
