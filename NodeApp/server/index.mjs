@@ -56,6 +56,8 @@ io.sockets.on("connection", socket => {
 
     socket.on("broadcaster", () => {
         broadcaster = socket.id;
+        console.log("Got broadcaster");
+        console.log(broadcaster);
         socket.broadcast.emit("broadcaster");
     });
     socket.on("watcher", () => {
@@ -68,6 +70,7 @@ io.sockets.on("connection", socket => {
         socket.to(id).emit("answer", socket.id, message);
     });
     socket.on("candidate", (id, message) => {
+        console.log("Got candidate");
         socket.to(id).emit("candidate", socket.id, message);
     });
     socket.on("disconnect", () => {

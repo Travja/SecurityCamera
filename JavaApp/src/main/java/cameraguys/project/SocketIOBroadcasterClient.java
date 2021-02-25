@@ -3,7 +3,8 @@ package cameraguys.project;
 import dev.onvoid.webrtc.*;
 import io.socket.client.IO;
 import io.socket.client.Socket;
-import io.socket.emitter.Emitter;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.net.URI;
 import java.util.Arrays;
@@ -28,57 +29,57 @@ public class SocketIOBroadcasterClient {
         HashMap<String, RTCPeerConnection> peerConnections = new HashMap<>();
         PeerConnectionFactory factory = new PeerConnectionFactory();
 
-        Socket socket = IO.socket(URI.create("http://localhost:42609"));
+        Socket socket = IO.socket(URI.create("http://localhost:42069"));
 
         socket.connect();
 
-        socket.on("connection", objects -> {
+        socket.on("connect", objects -> {
             System.out.println("Connection: " + socket.id());
             socket.emit("broadcaster");
         });
 
-        socket.on("connect_error", new Emitter.Listener() {
-            @Override
-            public void call(Object... objects) {
-                Exception e = (Exception) objects[0];
-                System.out.println("Connect error:" + e.getMessage());
-                System.out.println("Connect error:" + Arrays.toString(e.getStackTrace()));
-            }
+        socket.on("connect_error", objects -> {
+            Exception e = (Exception) objects[0];
+            System.out.println("Connect error:" + e.getMessage());
+            System.out.println("Connect error:" + Arrays.toString(e.getStackTrace()));
         });
 
-        socket.on("error", new Emitter.Listener() {
-            @Override
-            public void call(Object... objects) {
-                Exception e = (Exception) objects[0];
-                System.out.println("Connect error:" + e.getMessage());
-            }
+        socket.on("error", objects -> {
+            Exception e = (Exception) objects[0];
+            System.out.println("Connect error:" + e.getMessage());
         });
 
 
-        socket.on("disconnect", objects ->{
-            System.out.println(Arrays.toString(objects));
-        });
+        socket.on("disconnect", objects -> System.out.println(Arrays.toString(objects)));
 
         socket.on("answer", objects -> {
-            String id = objects[0].toString();
-            RTCSessionDescription description = (RTCSessionDescription) objects[1];
-            System.out.println("id:" + id);
-            peerConnections.get(id).setRemoteDescription(description, new SetSessionDescriptionObserver() {
-                @Override
-                public void onSuccess() {
-                    System.out.println("remote description set");
-                }
+            try {
+                String id = objects[0].toString();
+                System.out.println(objects[1]);
+                JSONObject json = (JSONObject) objects[1];
+                RTCSessionDescription description = new RTCSessionDescription(RTCSdpType.valueOf(json.getString("type").toUpperCase()), json.getString("sdp"));
+//                RTCSessionDescription description = (RTCSessionDescription) objects[1];
+                System.out.println("id:" + id);
+                peerConnections.get(id).setRemoteDescription(description, new SetSessionDescriptionObserver() {
+                    @Override
+                    public void onSuccess() {
+                        System.out.println("remote description set");
+                    }
 
-                @Override
-                public void onFailure(String s) {
+                    @Override
+                    public void onFailure(String s) {
 
-                }
-            });
+                    }
+                });
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
         });
 
         socket.on("watcher", objects -> {
 
             String id = objects[0].toString();
+            System.out.println("Received watcher");
 
             RTCIceServer iceServer = new RTCIceServer();
             iceServer.urls.add("stun:stun.l.google.com:19302");
@@ -86,35 +87,50 @@ public class SocketIOBroadcasterClient {
             RTCConfiguration config = new RTCConfiguration();
             config.iceServers.add(iceServer);
 
-            RTCPeerConnection peerConnection= factory.createPeerConnection(config, new PeerConnectionObserver() {
+            RTCPeerConnection peerConnection = factory.createPeerConnection(config, new PeerConnectionObserver() {
                 @Override
                 public void onIceCandidate(RTCIceCandidate rtcIceCandidate) {
                     //add the stream to the track
-                    socket.emit("candidate",id,rtcIceCandidate);
+                    socket.emit("candidate", id, rtcIceCandidate);
                 }
             });
 
-            peerConnections.put(id,peerConnection);
+            peerConnections.put(id, peerConnection);
 
             RTCOfferOptions offerOptions = new RTCOfferOptions();
-            peerConnection.createOffer(offerOptions,new CreateSessionDescriptionObserver() {
+            peerConnection.createOffer(offerOptions, new CreateSessionDescriptionObserver() {
                 @Override
                 public void onSuccess(RTCSessionDescription rtcSessionDescription) {
+                    System.out.println("Built offer");
                     peerConnection.setLocalDescription(rtcSessionDescription, new SetSessionDescriptionObserver() {
                         @Override
                         public void onSuccess() {
-                            socket.emit("offer",id, peerConnection.getLocalDescription());
+                            try {
+                                System.out.println("Set description");
+                                System.out.println(peerConnection.getLocalDescription());
+                                String json = new JSONObject()
+                                        .put("type", peerConnection.getLocalDescription().sdpType.toString().toLowerCase())
+                                        .put("sdp", peerConnection.getLocalDescription().sdp)
+                                        .toString();
+                                System.out.println(json);
+                                socket.emit("offer", id, json);
+                                System.out.println("Sent offer.");
+                            } catch (JSONException e) {
+                                System.err.println("Could not convert to json...");
+                                e.printStackTrace();
+                            }
                         }
 
                         @Override
                         public void onFailure(String s) {
-
+                            System.out.println("Failed to set description");
                         }
                     });
                 }
 
                 @Override
                 public void onFailure(String s) {
+                    System.out.println("Failed to build offer.");
                 }
             });
         });
