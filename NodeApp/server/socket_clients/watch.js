@@ -12,7 +12,7 @@ const config = {
     ],
 };
 
-const socket = new eio.Socket("ws://localhost:5000");
+const socket = new eio.Socket("ws://localhost:42069");
 const video = document.querySelector("video");
 const enableAudioButton = document.querySelector("#enable-audio");
 
@@ -22,18 +22,20 @@ prepareData = (e, data) => {
     let encodedData = {
         event: e,
     };
-    encodedData = { ...encodedData, ...data };
+    encodedData = {...encodedData, ...data};
     return JSON.stringify(encodedData);
 };
 
 socket.on("open", () => {
 
-    socket.send(prepareData("watcher",null));
+    socket.send(prepareData("watcher", null));
 
     console.log("Inside watch connect");
     console.log(socket.id);
 
-    let exData,id,message;
+    let exData, id, message;
+
+    socket.send(prepareData("room", {room_id: "room1"}));
 
     socket.on("message", (data) => {
 
@@ -55,10 +57,10 @@ socket.on("open", () => {
                     .then(() => {
                         console.log("Inside watch answer");
                         exData = {
-                            id:id,
-                            message:peerConnection.localDescription
+                            id: id,
+                            message: peerConnection.localDescription
                         }
-                        socket.send(prepareData("answer",exData));
+                        socket.send(prepareData("answer", exData));
                     });
                 peerConnection.ontrack = event => {
                     video.srcObject = event.streams[0];
@@ -87,7 +89,7 @@ socket.on("open", () => {
 
             case "broadcaster":
                 console.log("Inside watch broadcaster");
-                socket.send(prepareData("watcher",null));
+                socket.send(prepareData("watcher", null));
                 break;
         }
     });
