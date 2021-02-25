@@ -9,10 +9,12 @@ import SecureLS from "secure-ls";
  */
 export const ls = new SecureLS({ encodingType: "aes" });
 
-const LS_VAR = "@token";
+const T_VAR = "@token";
+const RT_VAR = "@refreshToken";
 
 const initial_state = {
-  token: ls.get(LS_VAR),
+  token: ls.get(T_VAR),
+  refresh_token: ls.get(RT_VAR),
 };
 
 /**
@@ -24,15 +26,19 @@ const initial_state = {
 export const reducer = (state = initial_state, action) => {
   switch (action.type) {
     case Redux.LOGIN: {
-      ls.set(LS_VAR, action.token);
+      ls.set(T_VAR, action.token);
+      ls.set(RT_VAR, action.refresh_token);
       return {
         token: action.token,
+        refresh_token: action.refresh_token,
       };
     }
     case Redux.LOGOUT: {
-      ls.set(LS_VAR, null);
+      ls.remove(T_VAR);
+      ls.remove(RT_VAR);
       return {
         token: null,
+        refresh_token: null,
       };
     }
     default:

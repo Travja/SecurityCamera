@@ -61,5 +61,6 @@ class Recordings extends Component {
 
 const mapStateToProps = (state) => ({
   token: state.token,
+  refresh_token: state.refresh_token,
 });
 export default connect(mapStateToProps)(Recordings);
