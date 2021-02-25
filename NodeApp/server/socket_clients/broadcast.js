@@ -12,7 +12,7 @@ const config = {
     ],
 };
 
-const socket = new eio.Socket("ws://localhost:42069");
+const socket = io("ws://localhost:42069");
 
 console.log("URI WINDOW: " + window.location.origin);
 

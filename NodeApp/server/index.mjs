@@ -7,7 +7,7 @@ import {fileURLToPath} from "url";
 import cors from "cors";
 import multer from "multer";
 //Engine IO initialize
-import engine from "engine.io";
+import { Server } from "socket.io";
 import httpServer from "http";
 // import SQLConfig from "./configurations/SQLConfig.js";
 import buildRouting from "dobject-routing";
@@ -38,6 +38,7 @@ app.get("/watcher", (req, res) => res.sendFile(path.join(__dirname, "socket_clie
 app.get("/watch.js", (req, res) => res.sendFile(path.join(__dirname, "socket_clients/watch.js")));
 app.get("/broadcast.js", (req, res) => res.sendFile(path.join(__dirname, "socket_clients/broadcast.js")));
 app.get("/engine.io.js", (req, res) => res.sendFile(path.join(__dirname, "socket_clients/engine.io.js")));
+app.get("/socket.io.js", (req, res) => res.sendFile(path.join(__dirname, "socket_clients/socket.io.js")));
 // client setup and routing
 if (NODE_ENV === "production") {
     app.use(express.static("build/client"));
@@ -48,7 +49,7 @@ if (NODE_ENV === "production") {
 let broadcaster;
 
 const http = httpServer.createServer(app);
-let server = engine.attach(http);
+let server = new Server(http);
 
 // Add rooms functionality
 let sockets = [];
