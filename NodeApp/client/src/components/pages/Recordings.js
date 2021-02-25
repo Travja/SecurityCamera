@@ -11,12 +11,12 @@ class Recordings extends Component {
       loading: true,
     };
 
-    this.getRecordings = this.getRecordings.bind();
+    this.getRecordings = this.getRecordings.bind(this);
   }
 
   async componentDidMount() {
     this.mounted = true;
-    this.setState({ recording: await this.getRecordings() });
+    this.getRecordings();
   }
 
   componentWillUnmount() {
@@ -32,7 +32,7 @@ class Recordings extends Component {
       else
         this.setState({
           loading: false,
-          recordings: recordings.map((recording) => {
+          recordings: (recordings ? recordings : []).map((recording) => {
             return (
               <RecordingCard
                 title={new Date().toString()}
