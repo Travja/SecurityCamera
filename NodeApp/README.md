@@ -4,28 +4,17 @@
 # Node Application
 
 ## Install
-Ensure you have node and npm installed.
+Ensure you have node and npm installed. *The project was built with node 14+.
 
-Then inside of NodeApp run
-```
-npm install
-```
-follwed by going to client and running
-```
-npm install
-```
-
-After that return to NodeApp and then you can either build the app or start a dev server.
-
-### Building
-After installing you can go to NodeApp and run
-```
+Navigate to the repositories base directory and execute the following:
+```sh
+# The start script runs 'npm i' in the current directory
+# as well as in the 'client' directory
+cd NodeApp
 npm start
 ```
-There should then be a `build` folder with the built project. You could then cd into there and run 
-```
-node index.mjs
-```
+
+This script compiles all the code and (by default) starts a *production deployment of the server. You may terminate this process in order to start a development server. In most cases, `npm start` should be sufficient to startup and run the server.
 
 ### Development Server
 After installing you can go to the NodeApp and run

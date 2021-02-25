@@ -6,9 +6,7 @@ import dotenv from 'dotenv';
 dotenv.config({path: "./server/.env"});
 
 export function installServer() {
-    return exec('npm i', {
-        cwd: './server'
-    });
+    return exec('npm i');
 }
 
 export function installClient() {
