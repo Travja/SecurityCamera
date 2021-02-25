@@ -13,7 +13,9 @@ class Login extends Component {
 
   render() {
     const { password, email } = this.state;
-    const login = () => {
+    
+    const login = (e) => {
+      e.preventDefault();
       console.log("called", { password, email });
       AccountAPI.login({ password, email }, (err) => {
         if (err) {
