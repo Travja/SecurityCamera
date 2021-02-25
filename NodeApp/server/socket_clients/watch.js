@@ -49,6 +49,7 @@ socket.on("open", () => {
                 id = data["id"];
                 message = data["message"];
                 console.log("Inside watch offer");
+                console.log(message);
                 peerConnection = new RTCPeerConnection(config);
                 peerConnection
                     .setRemoteDescription(message)

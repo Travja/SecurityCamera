@@ -1,4 +1,3 @@
-//@ts-check
 import pkg from "dobject-routing";
 import CameraRoutes from "../routes/camera-routes.js";
 

@@ -7,12 +7,12 @@ let request = await(await useSql()).request();
 /**
  * @type {import("dobject-routing").IRoute[]}
  */
-const stream_routes = [
+const recording_routes = [
     /**
     * Get a single stream
     */
     {
-        url: "/streams/:id",
+        url: "/recordings/:id",
         method: ERequestType.GET,
         handlers: [
             authenticateUser,
@@ -20,7 +20,7 @@ const stream_routes = [
                 try {
                     const id = Number.parseInt(req.params.id);
                     if (!id && id != NaN) return res.status(400).json({ error: "No stream id" });
-                    const result = await request.query`select * from Camera where CameraID = ${id} and Owner = ${req.user.UserID};`
+                    const result = await request.query`select * from Recording where RecordingID = ${id};`
                     res.send(result.recordset);
                 } catch (err) {
                     return res.status(500).json({ error: err });
@@ -29,16 +29,16 @@ const stream_routes = [
         ]
     },
     /**
-    * Get all the streams
+    * Get all the recordings
     */
     {
-        url: "/streams",
+        url: "/recordings",
         method: ERequestType.GET,
         handlers: [
             authenticateUser,
             async (req, res) => {
                 try {
-                    const result = await request.query`select * from Camera where Owner = ${req.user.UserID};`
+                    const result = await request.query`select * from Recording;`
                     res.send(result.recordset);
                 } catch (err) {
                     return res.status(500).json({ error: err });
@@ -51,12 +51,12 @@ const stream_routes = [
      * @type {import("dobject-routing").IRoute}
      */
     {
-        url: "/streams",
+        url: "/recordings",
         method: ERequestType.POST,
         handlers: [
             authenticateUser,
             async (req , res) => {
-                await request.query`insert into Camera (StreamURL, Name, Owner) values (${req.body.StreamURL}, ${req.body.Name}, ${req.user.UserID})`;
+                await request.query`insert into Recording (RecordingDate, Camera, BlobURL) values (${req.body.RecordingDate}, ${req.body.Camera}, ${req.user.BlobURL})`;
                 res.sendStatus(201);
             }
         ]
@@ -66,7 +66,7 @@ const stream_routes = [
      * @type {import("dobject-routing").IRoute}
      */
     {
-        url: "/streams/:id",
+        url: "/recordings/:id",
         method: ERequestType.PUT,
         handlers: [
             authenticateUser,
@@ -81,7 +81,7 @@ const stream_routes = [
      * @type {import("dobject-routing").IRoute}
      */
     {
-        url: "/streams/:id",
+        url: "/recordings/:id",
         method: ERequestType.DELETE,
         handlers: [
             authenticateUser,
@@ -95,4 +95,4 @@ const stream_routes = [
         ]
     }
 ]
-export default stream_routes;
+export default recording_routes;

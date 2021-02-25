@@ -2,7 +2,6 @@ import nodemailer from "nodemailer";
 import Mailgen from "mailgen";
 import { PORT } from "../keys.js";
 import eRequestType from "../enums/eRequestType.js";
-import fs from 'fs';
 
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
