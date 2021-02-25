@@ -10,7 +10,7 @@ class AccountAPI {
   static async login(payload, cb) {
     try {
       const login = await axios.post("/api/login", JSON.stringify(payload), {
-        headers: { "Contnet-Type": "application/json" },
+        headers: { "Content-Type": "application/json" },
       });
       if (login.data.error) cb({ error: login.data.error });
       else {
