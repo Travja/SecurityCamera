@@ -12,7 +12,7 @@ import httpServer from "http";
 // import SQLConfig from "./configurations/SQLConfig.js";
 import buildRouting from "dobject-routing";
 import general_routes from "./routes/general-routes.js";
-//import SQLConfig from "./configurations/SQLConfig.js";
+import SQLConfig from "./configurations/SQLConfig.js";
 
 // gather required frameworks and configurations
 const app = express();
@@ -30,7 +30,7 @@ app.use(bodyParser.json({limit: "50mb"}));
 app.use(bodyParser.urlencoded({limit: "50mb", extended: true}));
 // spin up configurations
 app.use('/api', buildRouting.default([general_routes]));
-//new SQLConfig();
+new SQLConfig();
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 app.get("/broadcast", (req, res) => res.sendFile(path.join(__dirname, "socket_clients/broadcast.html")));
