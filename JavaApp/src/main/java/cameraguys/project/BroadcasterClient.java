@@ -28,7 +28,7 @@ public class BroadcasterClient {
         logger.setUseParentHandlers(false);
 
 
-        Socket socket = new Socket(URI.create("ws://localhost:5000"));
+        Socket socket = new Socket(URI.create("ws://localhost:42069"));
 
 
         HashMap<String, RTCPeerConnection> peerConnections = new HashMap<>();
@@ -44,7 +44,7 @@ public class BroadcasterClient {
                 try {
                     String data = new JSONObject().put("event", "broadcaster").toString();
                     System.out.println(data);
-                    socket.send("ping");
+                    socket.send("{\"event\": \"ping\"}");
                     //socket.send(data);
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -52,6 +52,7 @@ public class BroadcasterClient {
                 socket.on("message", new Emitter.Listener() {
                     @Override
                     public void call(Object... args) {
+                        System.out.println("Got message");
 
                         try {
                             JSONObject data = new JSONObject(args[0].toString());
@@ -131,6 +132,9 @@ public class BroadcasterClient {
                                 case "disconnectPeer":
                                     id = data.getString("id");
                                     peerConnections.remove(id);
+                                    break;
+                                case "ping":
+                                    System.out.println("Pong!");
                                     break;
                             }
                         } catch (JSONException e) {
