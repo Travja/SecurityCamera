@@ -78,7 +78,9 @@ const account_routes = [
             token: access_token,
             refreshToken: refresh_token,
           });
-        } catch (err) {}
+        } catch (err) {
+          return res.status(500).json({ error: `error: ${err}` });
+        }
       },
     ],
   },
