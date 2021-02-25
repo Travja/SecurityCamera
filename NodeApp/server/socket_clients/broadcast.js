@@ -12,7 +12,7 @@ const config = {
     ],
 };
 
-const socket = new eio.Socket("wss://" + window.location.host + (window.location.port != "" ? (":" + window.location.port) : ""));
+const socket = new eio.Socket("ws://" + window.location.host + (window.location.port != "" ? (":" + window.location.port) : ""));
 
 console.log("URI WINDOW: " + window.location.origin);
 
