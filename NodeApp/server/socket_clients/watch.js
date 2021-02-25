@@ -12,7 +12,7 @@ const config = {
     ],
 };
 
-const socket = new eio.Socket("ws://localhost:42069");
+const socket = new eio.Socket("wss://" + window.location.hostname + (window.location.port != "" ? (":" + window.location.port) : ""));
 const video = document.querySelector("video");
 const enableAudioButton = document.querySelector("#enable-audio");
 
