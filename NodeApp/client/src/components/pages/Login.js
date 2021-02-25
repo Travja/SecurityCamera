@@ -6,16 +6,16 @@ class Login extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      username: "",
+      email: "",
       password: "",
     };
   }
 
   render() {
-    const { password, username } = this.state;
+    const { password, email } = this.state;
     const login = () => {
-      console.log("called", this.state);
-      AccountAPI.login({ password, password: username }, (err) => {
+      console.log("called", { password, email });
+      AccountAPI.login({ password, email }, (err) => {
         if (err) {
           console.log("error", err.error);
         } else {
