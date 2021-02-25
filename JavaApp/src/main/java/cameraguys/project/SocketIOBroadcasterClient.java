@@ -28,7 +28,7 @@ public class SocketIOBroadcasterClient {
         HashMap<String, RTCPeerConnection> peerConnections = new HashMap<>();
         PeerConnectionFactory factory = new PeerConnectionFactory();
 
-        Socket socket = IO.socket(URI.create("http://localhost:5000"));
+        Socket socket = IO.socket(URI.create("http://localhost:42609"));
 
         socket.connect();
 
