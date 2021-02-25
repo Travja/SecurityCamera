@@ -1,48 +1,66 @@
 import React, { Component } from "react";
 import { RecordingCard } from "../RecordingCard";
 import axios from "axios";
+import { connect } from "react-redux";
 
-export default class Recordings extends Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            recordings: []
-        };
-        
-        this.getRecordings = this.getRecordings.bind();
-    }
-    
-    async componentDidMount() {
-        this.mounted = true;
-        this.setState({recording: await this.getRecordings()});
-    }
+class Recordings extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      recordings: [],
+    };
 
-    componentWillUnmount() {
-        this.mounted = false;
-    }
+    this.getRecordings = this.getRecordings.bind();
+  }
 
-    async getRecordings() {
-        return await (await axios.get("/api/recordings")).data.map(recording => {
-            return (
-                <RecordingCard title={new Date().toString()} download={recording.url} save={recording.title}>
-                    <img src={recording.thumbnail} width="100%" height="100%"/>
-                </RecordingCard>
-            );
-        });
-    }
+  async componentDidMount() {
+    this.mounted = true;
+    this.setState({ recording: await this.getRecordings() });
+  }
 
-    render() {
-        return (
-            <div className="page">
-                <header>
-                    <h3>Recordings</h3>
-                </header>
-                <article>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", justifyItems: "center", gap:"45px" }}>
-                        {this.recordings}
-                    </div>
-                </article>
-            </div>
-        );
-    }
+  componentWillUnmount() {
+    this.mounted = false;
+  }
+
+  async getRecordings() {
+    return await (await axios.get("/api/recordings")).data.map((recording) => {
+      return (
+        <RecordingCard
+          title={new Date().toString()}
+          download={recording.url}
+          save={recording.title}
+        >
+          <img src={recording.thumbnail} width="100%" height="100%" />
+        </RecordingCard>
+      );
+    });
+  }
+
+  render() {
+    return (
+      <div className="page">
+        <header>
+          <h3>Recordings</h3>
+        </header>
+        <article>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr 1fr",
+              justifyItems: "center",
+              gap: "45px",
+            }}
+          >
+            {this.recordings}
+          </div>
+        </article>
+      </div>
+    );
+  }
 }
+
+const mapStateToProps = (state) => ({
+  token: state.token,
+  refresh_token: state.refresh_token,
+});
+export default connect(mapStateToProps)(Recordings);

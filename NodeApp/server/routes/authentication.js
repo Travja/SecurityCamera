@@ -1,29 +1,49 @@
+import jwt from "jsonwebtoken";
+import { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET } from "../keys.js";
+const { verify, sign } = jwt;
+import { useSql } from "../configurations/SQLConfig.js";
+let request = await (await useSql()).request();
+
+/**
+ * Authenticates a USer user with authorization headers.
+ * @param {Object} req
+ * @param {Object} res
+ * @param {Object} next
+ */
 export const authenticateUser = (req, res, next) => {
-  // For the time being we will bypass this.
-  // TODO: Remove next line and finish implementation.
-  return next();
-  // TODO: Check against database.
   try {
     const { authorization } = req.headers;
-    if (!authorization)
+    const token = authorization && authorization.split(" ")[1];
+    if (!token)
       return res
         .status(403)
         .json({ error: "Not Authorized to access this route." });
-    const creds = {
-      username: Buffer.from(authorization.split(" ").pop(), "base64")
-        .toString()
-        .split(":")[0],
-      password: Buffer.from(authorization.split(" ").pop(), "base64")
-        .toString()
-        .split(":")
-        .pop(),
-    };
-    try {
-      // TODO: connect to database and check against `creds.username` and `creds.password`
-    } catch (err) {
-      return res.status(500).json({ error: err });
-    }
+    verify(token, ACCESS_TOKEN_SECRET, async (err, data) => {
+      if (err) return res.status(403).json({ error: "Invlaid token" });
+      const result = await request.query`select * from [User] where UserID = ${data.id}`;
+      if (result.recordset[0]) {
+        req.user = result.recordset[0];
+        return next();
+      }
+      return res.status(422).json({ error: "null user" });
+    });
   } catch (err) {
     return res.status(500).json({ error: err });
   }
+};
+
+/**
+ * Generates the JWT token
+ * @param {Object} user user object
+ */
+export const generateAccessToken = (user) => {
+  return sign(user, ACCESS_TOKEN_SECRET, { expiresIn: "120s" });
+};
+
+/**
+ * Generates the refresh JWT token
+ * @param {Object} user user object
+ */
+export const generateRefreshToken = (user) => {
+  return sign(user, REFRESH_TOKEN_SECRET, { expiresIn: "1h" });
 };

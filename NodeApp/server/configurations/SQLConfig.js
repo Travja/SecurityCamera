@@ -44,7 +44,7 @@ export default class SQLConfig {
                 CREATE TABLE [User] (
                     UserID INT PRIMARY KEY IDENTITY(1,1),
                     Email VARCHAR(2048),
-                    [Hash] VARBINARY(64) 
+                    [Hash] VARCHAR(2048) 
                 );
             END;`;
             await request.query`IF  NOT EXISTS (SELECT * FROM sys.objects 

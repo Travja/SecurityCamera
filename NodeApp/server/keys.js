@@ -1,6 +1,5 @@
 // import and confugure dotenv
 import dotenv from "dotenv";
-import path from "path"
 const { config } = dotenv;
 config();
 // environment variables
@@ -11,3 +10,5 @@ export const DB_URL = process.env.DB_URL ? process.env.DB_URL : 'localhost';
 export const DB_DATASOURCE = process.env.DB_DATASOURCE;
 export const DB_PORT = process.env.DB_PORT ? Number.parseInt(process.env.DB_PORT) : 1433;
 export const NODE_ENV = process.env.NODE_ENV;
+export const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
+export const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET;
