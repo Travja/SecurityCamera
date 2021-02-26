@@ -1,6 +1,10 @@
 package cameraguys.project;
 
 import dev.onvoid.webrtc.*;
+import dev.onvoid.webrtc.media.MediaDevices;
+import dev.onvoid.webrtc.media.video.VideoDevice;
+import dev.onvoid.webrtc.media.video.VideoDeviceSource;
+import dev.onvoid.webrtc.media.video.VideoTrack;
 import io.socket.client.IO;
 import io.socket.client.Socket;
 import org.json.JSONException;
@@ -8,6 +12,7 @@ import org.json.JSONObject;
 
 import java.net.URI;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
@@ -91,9 +96,32 @@ public class SocketIOBroadcasterClient {
                 @Override
                 public void onIceCandidate(RTCIceCandidate rtcIceCandidate) {
                     //add the stream to the track
-                    socket.emit("candidate", id, rtcIceCandidate);
+                    try {
+                        String json = new JSONObject()
+                                .put("candidate", rtcIceCandidate.sdp)
+                                .put("sdpMLineIndex", rtcIceCandidate.sdpMLineIndex)
+                                .put("sdpMid", rtcIceCandidate.sdpMid)
+                                .toString();
+                        socket.emit("candidate", id, json);
+                    } catch (JSONException e) {
+                        System.err.println("Could not convert ICE candidate to json.");
+                    }
                 }
             });
+
+            VideoDeviceSource vid = new VideoDeviceSource();
+            VideoDevice device = MediaDevices.getVideoCaptureDevices().get(0);
+            System.out.println(" -- CAPABILITIES -- ");
+            MediaDevices.getVideoCaptureCapabilities(device).forEach(capability -> {
+                System.out.println(capability);
+            });
+
+            vid.setVideoCaptureDevice(device);
+            vid.setVideoCaptureCapability(MediaDevices.getVideoCaptureCapabilities(device).get(0));
+            vid.start();
+            VideoTrack track = factory.createVideoTrack("CAM", vid);
+
+            peerConnection.addTrack(track, Collections.emptyList()); //Should this list be empty?
 
             peerConnections.put(id, peerConnection);
 
@@ -136,9 +164,17 @@ public class SocketIOBroadcasterClient {
         });
 
         socket.on("candidate", objects -> {
-            String id = objects[0].toString();
-            RTCIceCandidate candidate = (RTCIceCandidate) objects[1];
-            peerConnections.get(id).addIceCandidate(candidate);
+            try {
+                String id = objects[0].toString();
+                JSONObject json = (JSONObject) objects[1];
+                System.out.println(json);
+                RTCIceCandidate candidate = new RTCIceCandidate(json.getString("sdpMid"), json.getInt("sdpMLineIndex"), json.getString("candidate"));
+//            RTCIceCandidate candidate = (RTCIceCandidate) objects[1];
+                peerConnections.get(id).addIceCandidate(candidate);
+            } catch (JSONException e) {
+                System.err.println("Could not convert candidate to ICE Candidate");
+                e.printStackTrace();
+            }
         });
 
         socket.on("disconnectPeer", objects -> {
