@@ -1,10 +1,11 @@
 import pkg from "dobject-routing";
 import CameraRoutes from "../routes/camera-routes.js";
+import AccountRoutes from "../routes/account-routes.js";
 
 const { ERequestType } = pkg;
 
 /**
- * general route objects as an array 
+ * general route objects as an array
  * (Make ANY other routes their own files as this structure.)
  * e.g. account-routes.js <- only has routes for the account
  * This file is solely for `general` routes (login, logout...)
@@ -18,16 +19,20 @@ const general_routes = {
    * the route formatting example
    */
   routes: [
-      {
-        method: ERequestType.GET,
-        handlers:[
-            (req, res) => {res.send("Hello");},
-            (req, res) => {res.send("Hello");}
-        ],
-        routes: [...CameraRoutes]
-      }
+    {
+      method: ERequestType.GET,
+      handlers: [
+        (_req, res) => {
+          res.send("Hello");
+        },
+        (_req, res) => {
+          res.send("Hello");
+        },
+      ],
+      routes: [...CameraRoutes, ...AccountRoutes],
+    },
   ],
-  routers:[]
+  routers: [],
 };
 
 export default general_routes;

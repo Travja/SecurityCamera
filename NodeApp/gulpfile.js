@@ -5,6 +5,16 @@ import dotenv from 'dotenv';
 
 dotenv.config({path: "./server/.env"});
 
+export function installServer() {
+    return exec('npm i');
+}
+
+export function installClient() {
+    return exec('npm i', {
+        cwd: './client'
+    });
+}
+
 export function startServer(done) {
     return nodemon({
         script: 'server/index.mjs',
@@ -50,4 +60,4 @@ function copyServer() {
 
 export let client = gulp.series(startClient)
 export let dev = gulp.series(startServer)
-export default gulp.series(buildClient, copyClientBuild, copyServer);
+export default gulp.series(installClient, installServer, buildClient, copyClientBuild, copyServer);

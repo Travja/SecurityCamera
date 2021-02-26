@@ -1,6 +1,12 @@
 import React, { Component } from "react";
+import { connect } from "react-redux";
+import { Redux } from "../../redux/redux-types";
 
-export default class Settings extends Component {
+/**
+ * Settings page. This is a protected route. 
+ * To access the logged in user directly: `this.props.user`
+ */
+class Settings extends Component {
   constructor(props) {
     super(props);
     this.state = {};
@@ -15,6 +21,21 @@ export default class Settings extends Component {
   }
 
   render() {
-    return <div>its the settings page!</div>;
+    const logout = () => {
+      this.props.dispatch({ type: Redux.LOGOUT, action: null });
+      window.location.href = "/";
+    };
+    return (
+      <div>
+        its the settings page!
+        <button onClick={logout}>Logout</button>
+      </div>
+    );
   }
 }
+
+const mapStateToProps = (state) => ({
+  token: state.token,
+  refresh_token: state.refresh_token,
+});
+export default connect(mapStateToProps)(Settings);
