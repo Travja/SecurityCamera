@@ -120,8 +120,11 @@ public class SocketIOBroadcasterClient {
             vid.setVideoCaptureCapability(MediaDevices.getVideoCaptureCapabilities(device).get(0));
             vid.start();
             VideoTrack track = factory.createVideoTrack("CAM", vid);
+            track.addSink(videoFrame -> {
+                //This is potentially where we sync the frames into opencv??
+            });
 
-            peerConnection.addTrack(track, Collections.emptyList()); //Should this list be empty?
+            peerConnection.addTrack(track, Collections.singletonList(track.getId()));
 
             peerConnections.put(id, peerConnection);
 
