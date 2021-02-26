@@ -12,9 +12,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.URI;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
+import java.util.*;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -135,14 +133,18 @@ public class SocketIOBroadcasterClient {
             AudioOptions audioOptions = new AudioOptions();
             AudioSource audioSource = factory.createAudioSource(audioOptions);
             AudioTrack audioTrack = factory.createAudioTrack("AUDIO", audioSource);
-            peerConnection.addTrack(audioTrack, Collections.singletonList(audioTrack.getId()));
-
             VideoTrack track = factory.createVideoTrack("CAM", vid);
+
             track.addSink(videoFrame -> {
                 //This is potentially where we sync the frames into opencv??
             });
 
-            peerConnection.addTrack(track, Collections.singletonList(track.getId()));
+            List<String> trackIds = new ArrayList<>();
+            trackIds.add(audioTrack.getId());
+            trackIds.add(track.getId());
+
+            peerConnection.addTrack(audioTrack, trackIds);
+            peerConnection.addTrack(track, trackIds);
 
             peerConnections.put(id, peerConnection);
 
