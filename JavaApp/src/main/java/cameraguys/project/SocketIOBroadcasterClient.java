@@ -2,6 +2,7 @@ package cameraguys.project;
 
 import dev.onvoid.webrtc.*;
 import dev.onvoid.webrtc.media.MediaDevices;
+import dev.onvoid.webrtc.media.audio.*;
 import dev.onvoid.webrtc.media.video.VideoDevice;
 import dev.onvoid.webrtc.media.video.VideoDeviceSource;
 import dev.onvoid.webrtc.media.video.VideoTrack;
@@ -110,15 +111,32 @@ public class SocketIOBroadcasterClient {
             });
 
             VideoDeviceSource vid = new VideoDeviceSource();
+            AudioDeviceModule audioDeviceModule = new AudioDeviceModule();
+            AudioDevice audioDevice = MediaDevices.getAudioCaptureDevices().get(0);
             VideoDevice device = MediaDevices.getVideoCaptureDevices().get(0);
             System.out.println(" -- CAPABILITIES -- ");
+
             MediaDevices.getVideoCaptureCapabilities(device).forEach(capability -> {
+                System.out.println(capability);
+            });
+            MediaDevices.getAudioCaptureDevices().forEach(capability -> {
                 System.out.println(capability);
             });
 
             vid.setVideoCaptureDevice(device);
             vid.setVideoCaptureCapability(MediaDevices.getVideoCaptureCapabilities(device).get(0));
             vid.start();
+
+            audioDeviceModule.setRecordingDevice(audioDevice);
+            audioDeviceModule.initRecording();
+            audioDeviceModule.setPlayoutDevice(MediaDevices.getAudioRenderDevices().get(0));
+            audioDeviceModule.initPlayout();
+
+            AudioOptions audioOptions = new AudioOptions();
+            AudioSource audioSource = factory.createAudioSource(audioOptions);
+            AudioTrack audioTrack = factory.createAudioTrack("AUDIO", audioSource);
+            peerConnection.addTrack(audioTrack, Collections.singletonList(audioTrack.getId()));
+
             VideoTrack track = factory.createVideoTrack("CAM", vid);
             track.addSink(videoFrame -> {
                 //This is potentially where we sync the frames into opencv??
