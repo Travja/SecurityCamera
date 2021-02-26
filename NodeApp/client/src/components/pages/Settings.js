@@ -1,6 +1,11 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
+import { Redux } from "../../redux/redux-types";
 
+/**
+ * Settings page. This is a protected route. 
+ * To access the logged in user directly: `this.props.user`
+ */
 class Settings extends Component {
   constructor(props) {
     super(props);
@@ -16,7 +21,16 @@ class Settings extends Component {
   }
 
   render() {
-    return <div>its the settings page!</div>;
+    const logout = () => {
+      this.props.dispatch({ type: Redux.LOGOUT, action: null });
+      window.location.href = "/";
+    };
+    return (
+      <div>
+        its the settings page!
+        <button onClick={logout}>Logout</button>
+      </div>
+    );
   }
 }
 

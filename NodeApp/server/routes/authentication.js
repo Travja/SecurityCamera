@@ -2,7 +2,6 @@ import jwt from "jsonwebtoken";
 import { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET } from "../keys.js";
 const { verify, sign } = jwt;
 import { useSql } from "../configurations/SQLConfig.js";
-let request = await (await useSql()).request();
 
 /**
  * Authenticates a USer user with authorization headers.
@@ -20,6 +19,7 @@ export const authenticateUser = (req, res, next) => {
         .json({ error: "Not Authorized to access this route." });
     verify(token, ACCESS_TOKEN_SECRET, async (err, data) => {
       if (err) return res.status(403).json({ error: "Invlaid token" });
+      let request = await (await useSql()).request();
       const result = await request.query`select * from [User] where UserID = ${data.id}`;
       if (result.recordset[0]) {
         req.user = result.recordset[0];

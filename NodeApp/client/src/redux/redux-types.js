@@ -1,5 +1,5 @@
 /**
- * Types of redux fucntions.
+ * Types of redux functions.
  */
 export const Redux = {
   LOGIN: "LOGIN",

@@ -10,7 +10,6 @@ import { useSql } from "../configurations/SQLConfig.js";
 import bcrypt from "bcryptjs";
 const { verify } = jws;
 const { ERequestType } = pkg;
-let request = await (await useSql()).request();
 
 /**
  * @type {import("dobject-routing").IRoute[]}
@@ -31,6 +30,7 @@ const account_routes = [
             return res.status(403).json({ error: "No refresh token" });
           verify(refreshToken, REFRESH_TOKEN_SECRET, async (err, data) => {
             if (err) return res.status(403).json({ error: "Invalid token" });
+            let request = await (await useSql()).request();
             const result = await request.query`select * from [User] where UserID = ${data.id}`;
             if (result.recordset[0]) {
               const access_token = generateAccessToken({
@@ -63,6 +63,7 @@ const account_routes = [
       async (req, res) => {
         try {
           const { email, password } = req.body;
+          let request = await (await useSql()).request();
           const result = await request.query`select * from [User] where Email = ${email}`;
           if (!result.recordset[0])
             return res.status(404).json({ error: "No user found" });
@@ -78,7 +79,9 @@ const account_routes = [
             token: access_token,
             refreshToken: refresh_token,
           });
-        } catch (err) {}
+        } catch (err) {
+          return res.status(500).json({ error: `error: ${err}` });
+        }
       },
     ],
   },
@@ -93,6 +96,7 @@ const account_routes = [
       async (req, res) => {
         const { password } = req.body;
         const hash = bcrypt.hashSync(password, bcrypt.genSaltSync(11));
+        let request = await (await useSql()).request();
         await request.query`insert into [User] (Email, Hash) values (${req.body.email}, ${hash})`;
         return res.sendStatus(201);
       },

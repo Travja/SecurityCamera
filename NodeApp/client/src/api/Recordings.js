@@ -2,19 +2,20 @@ import axios from "axios";
 import { ls, RT_VAR, T_VAR } from "../redux/redux-reducer";
 import { handleError, getNewTokens } from "./helpers/functions";
 
-class StreamsAPI {
+class RecordingAPI {
   /**
-   * Gets the streams from the api
+   * Gets the recordings from the api
    * @param {Function} cb (err, data)
    */
-  static async getStreams(cb) {
+  static async getRecordings(cb) {
     try {
       const savedToken = await ls.get(T_VAR);
-      const streams = await axios.get("/api/streams", {
+      const recordings = await axios.get("/api/recordings", {
         headers: { Authorization: `Bearer ${savedToken}` },
       });
-      if (streams.data.error) return cb({ error: streams.data.error }, null);
-      return cb(null, streams.data);
+      if (recordings.data.error)
+        return cb({ error: recordings.data.error }, null);
+      return cb(null, recordings.data);
     } catch (err) {
       try {
         const newTokens = await getNewTokens(cb);
@@ -22,11 +23,12 @@ class StreamsAPI {
         ls.set(RT_VAR, newTokens.refreshToken);
         try {
           const savedToken = await ls.get(T_VAR);
-          const streams = await axios.get("/api/streams", {
+          const recordings = await axios.get("/api/recordings", {
             headers: { Authorization: `Bearer ${savedToken}` },
           });
-          if (streams.data.error) return cb({ error: streams.error }, null);
-          return cb(null, streams.data);
+          if (recordings.data.error)
+            return cb({ error: recordings.data.error }, null);
+          return cb(null, recordings.data);
         } catch (err2) {
           return handleError(err2, cb);
         }
@@ -37,4 +39,4 @@ class StreamsAPI {
   }
 }
 
-export default StreamsAPI;
+export default RecordingAPI;
