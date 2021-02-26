@@ -20,9 +20,14 @@ enableAudioButton.addEventListener("click", enableAudio)
 
 socket.on("offer", (id, description) => {
     peerConnection = new RTCPeerConnection(config);
+    try {
+        description = JSON.parse(description);
+    } catch (e) {
+        console.log("Supplied description is already a json object");
+    }
     console.log(description);
     peerConnection
-        .setRemoteDescription(JSON.parse(description))
+        .setRemoteDescription(description)
         .then(() => peerConnection.createAnswer())
         .then(sdp => peerConnection.setLocalDescription(sdp))
         .then(() => {
@@ -40,6 +45,12 @@ socket.on("offer", (id, description) => {
 
 
 socket.on("candidate", (id, candidate) => {
+    try {
+        candidate = JSON.parse(candidate);
+    } catch (e) {
+        console.log("Supplied candidate is already a json object");
+    }
+    console.log(candidate);
     peerConnection
         .addIceCandidate(new RTCIceCandidate(candidate))
         .catch(e => console.error(e));
