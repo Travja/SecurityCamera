@@ -28,8 +28,10 @@ public class SocketIOBroadcasterClient {
     private static PeerConnectionFactory factory = new PeerConnectionFactory();
     private static AudioTrack audioTrack;
     private static VideoTrack track;
+    private static VideoDeviceSource vid = new VideoDeviceSource();
+
     private static long time = System.currentTimeMillis();
-    private static boolean killed = true;
+    private static boolean killed = false;
     private static Socket socket;
     private static VideoTrackSink sink;
     private static HashMap<String, RTCPeerConnection> peerConnections = new HashMap<>();
@@ -209,6 +211,8 @@ public class SocketIOBroadcasterClient {
                 peerConnections.remove(id);
             });
         });
+        socketio.setUncaughtExceptionHandler((t, e) -> {
+        });
 
         if (!socketio.isAlive())
             socketio.start();
@@ -228,16 +232,21 @@ public class SocketIOBroadcasterClient {
         peerConnections.clear();
 
         audioTrack.dispose();
-        track.removeSink(sink);
-        track.dispose();
+        vid.dispose();
+        if (sink != null)
+            track.removeSink(sink);
+        track.dispose(); //TODO Crashes here... Not sure why. But it kills the app ¯\_(ツ)_/¯
 
         factory.dispose();
         if (socket != null)
             socket.close();
+
+        while (Thread.activeCount() > 0) {
+            Thread.currentThread().stop();
+        }
     }
 
     public static void initDevices() {
-        VideoDeviceSource vid = new VideoDeviceSource();
         VideoDevice device = MediaDevices.getVideoCaptureDevices().get(0);
 
         System.out.println("CAPABILITIES");
@@ -254,22 +263,16 @@ public class SocketIOBroadcasterClient {
         track = factory.createVideoTrack("CAM", vid);
 
         sink = videoFrame -> {
-            if (killed) {
-                vid.dispose();
-            }
-
-            if (System.currentTimeMillis() - time < 1000d / 30d) {
-                videoFrame.release();
+            if (System.currentTimeMillis() - time < 1000d / 10d) {
+//                videoFrame.release();
                 return; //Give me 30 FPS!
             }
-            videoFrame.retain();
 
             time = System.currentTimeMillis();
 
             FrameConverter.queue(videoFrame);
-            if (iteration < 100) iteration++;
-            if (iteration >= 100 && !cameraOn) cameraOn = true;
-
+            if (iteration < 50) iteration++;
+            if (iteration >= 50 && !cameraOn) cameraOn = true;
         };
         track.addSink(sink);
     }

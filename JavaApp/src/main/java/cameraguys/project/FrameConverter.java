@@ -22,10 +22,10 @@ public class FrameConverter {
             I420Buffer raw = videoFrame.buffer.toI420();
             convertAndSendMat(raw);
             raw.release();
-            videoFrame.release();
+//            videoFrame.release();
             processing = false;
         } else {
-            videoFrame.release();
+//            videoFrame.release();
         }
 //        stack.addLast(raw);
 //        start();
