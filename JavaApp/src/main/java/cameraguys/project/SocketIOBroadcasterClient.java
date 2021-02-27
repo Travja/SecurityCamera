@@ -232,18 +232,22 @@ public class SocketIOBroadcasterClient {
         peerConnections.clear();
 
         audioTrack.dispose();
-        vid.dispose();
         if (sink != null)
             track.removeSink(sink);
-        track.dispose(); //TODO Crashes here... Not sure why. But it kills the app ¯\_(ツ)_/¯
-
+        vid.stop();
+        track.dispose();
         factory.dispose();
+
+
         if (socket != null)
             socket.close();
 
-        while (Thread.activeCount() > 0) {
-            Thread.currentThread().stop();
-        }
+        System.exit(0); //Lol! This is one way to do it :P
+
+//        while (Thread.activeCount() > 0) {
+//            Thread.currentThread().stop();
+//        }
+//        vid.dispose();//TODO Crashes here... Not sure why. But it kills the app ¯\_(ツ)_/¯
     }
 
     public static void initDevices() {
