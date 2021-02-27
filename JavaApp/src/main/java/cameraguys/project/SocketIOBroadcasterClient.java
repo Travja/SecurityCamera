@@ -2,27 +2,40 @@ package cameraguys.project;
 
 import dev.onvoid.webrtc.*;
 import dev.onvoid.webrtc.media.MediaDevices;
-import dev.onvoid.webrtc.media.audio.*;
-import dev.onvoid.webrtc.media.video.VideoDevice;
-import dev.onvoid.webrtc.media.video.VideoDeviceSource;
-import dev.onvoid.webrtc.media.video.VideoTrack;
+import dev.onvoid.webrtc.media.audio.AudioOptions;
+import dev.onvoid.webrtc.media.audio.AudioSource;
+import dev.onvoid.webrtc.media.audio.AudioTrack;
+import dev.onvoid.webrtc.media.video.*;
 import io.socket.client.IO;
 import io.socket.client.Socket;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.URI;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class SocketIOBroadcasterClient {
+    private static PeerConnectionFactory factory = new PeerConnectionFactory();
+    private static AudioTrack audioTrack;
+    private static VideoTrack track;
+    private static long time = System.currentTimeMillis();
+    private static boolean killed = true;
+    private static Socket socket;
+    private static VideoTrackSink sink;
+    private static HashMap<String, RTCPeerConnection> peerConnections = new HashMap<>();
 
     public static void main(String[] args) {
 
+        killed = false;
         Logger logger = Logger.getLogger(IO.class.getName());
+        initDevices();
 
         Handler handlerObj = new ConsoleHandler();
         handlerObj.setLevel(Level.ALL);
@@ -30,10 +43,8 @@ public class SocketIOBroadcasterClient {
         logger.setLevel(Level.ALL);
         logger.setUseParentHandlers(false);
 
-        HashMap<String, RTCPeerConnection> peerConnections = new HashMap<>();
-        PeerConnectionFactory factory = new PeerConnectionFactory();
 
-        Socket socket = IO.socket(URI.create("http://localhost:42069"));
+        socket = IO.socket(URI.create("http://localhost:42069"));
 
         socket.connect();
 
@@ -59,11 +70,11 @@ public class SocketIOBroadcasterClient {
         socket.on("answer", objects -> {
             try {
                 String id = objects[0].toString();
-                System.out.println(objects[1]);
+//                System.out.println(objects[1]);
                 JSONObject json = (JSONObject) objects[1];
                 RTCSessionDescription description = new RTCSessionDescription(RTCSdpType.valueOf(json.getString("type").toUpperCase()), json.getString("sdp"));
 //                RTCSessionDescription description = (RTCSessionDescription) objects[1];
-                System.out.println("id:" + id);
+//                System.out.println("id:" + id);
                 peerConnections.get(id).setRemoteDescription(description, new SetSessionDescriptionObserver() {
                     @Override
                     public void onSuccess() {
@@ -108,37 +119,6 @@ public class SocketIOBroadcasterClient {
                 }
             });
 
-            VideoDeviceSource vid = new VideoDeviceSource();
-            AudioDeviceModule audioDeviceModule = new AudioDeviceModule();
-            AudioDevice audioDevice = MediaDevices.getAudioCaptureDevices().get(0);
-            VideoDevice device = MediaDevices.getVideoCaptureDevices().get(0);
-            System.out.println(" -- CAPABILITIES -- ");
-
-            MediaDevices.getVideoCaptureCapabilities(device).forEach(capability -> {
-                System.out.println(capability);
-            });
-            MediaDevices.getAudioCaptureDevices().forEach(capability -> {
-                System.out.println(capability);
-            });
-
-            vid.setVideoCaptureDevice(device);
-            vid.setVideoCaptureCapability(MediaDevices.getVideoCaptureCapabilities(device).get(0));
-            vid.start();
-
-            audioDeviceModule.setRecordingDevice(audioDevice);
-            audioDeviceModule.initRecording();
-            audioDeviceModule.setPlayoutDevice(MediaDevices.getAudioRenderDevices().get(0));
-            audioDeviceModule.initPlayout();
-
-            AudioOptions audioOptions = new AudioOptions();
-            AudioSource audioSource = factory.createAudioSource(audioOptions);
-            AudioTrack audioTrack = factory.createAudioTrack("AUDIO", audioSource);
-            VideoTrack track = factory.createVideoTrack("CAM", vid);
-
-            track.addSink(videoFrame -> {
-                //This is potentially where we sync the frames into opencv??
-            });
-
             List<String> trackIds = new ArrayList<>();
             trackIds.add(audioTrack.getId());
             trackIds.add(track.getId());
@@ -158,12 +138,12 @@ public class SocketIOBroadcasterClient {
                         public void onSuccess() {
                             try {
                                 System.out.println("Set description");
-                                System.out.println(peerConnection.getLocalDescription());
+//                                System.out.println(peerConnection.getLocalDescription());
                                 String json = new JSONObject()
                                         .put("type", peerConnection.getLocalDescription().sdpType.toString().toLowerCase())
                                         .put("sdp", peerConnection.getLocalDescription().sdp)
                                         .toString();
-                                System.out.println(json);
+//                                System.out.println(json);
                                 socket.emit("offer", id, json);
                                 System.out.println("Sent offer.");
                             } catch (JSONException e) {
@@ -190,7 +170,7 @@ public class SocketIOBroadcasterClient {
             try {
                 String id = objects[0].toString();
                 JSONObject json = (JSONObject) objects[1];
-                System.out.println(json);
+//                System.out.println(json);
                 RTCIceCandidate candidate = new RTCIceCandidate(json.getString("sdpMid"), json.getInt("sdpMLineIndex"), json.getString("candidate"));
 //            RTCIceCandidate candidate = (RTCIceCandidate) objects[1];
                 peerConnections.get(id).addIceCandidate(candidate);
@@ -202,9 +182,67 @@ public class SocketIOBroadcasterClient {
 
         socket.on("disconnectPeer", objects -> {
             String id = objects[0].toString();
+            peerConnections.get(id).close();
             peerConnections.remove(id);
         });
 
+    }
+
+    public static void kill() {
+        if (killed) return;
+        killed = true;
+
+        peerConnections.values().forEach(conn -> {
+            for (RTCRtpSender sender : conn.getSenders()) {
+                conn.removeTrack(sender);
+            }
+            conn.close();
+        });
+        peerConnections.clear();
+
+        audioTrack.dispose();
+        track.removeSink(sink);
+        track.dispose();
+
+        factory.dispose();
+        socket.close();
+    }
+
+    public static void initDevices() {
+        VideoDeviceSource vid = new VideoDeviceSource();
+        VideoDevice device = MediaDevices.getVideoCaptureDevices().get(0);
+
+        System.out.println("CAPABILITIES");
+        MediaDevices.getVideoCaptureCapabilities(device).forEach(cap -> System.out.println(cap));
+
+        vid.setVideoCaptureDevice(device);
+        vid.setVideoCaptureCapability(MediaDevices.getVideoCaptureCapabilities(device).get(9)); //I believe index 0 is auto-resolution
+        vid.start();
+
+        AudioOptions audioOptions = new AudioOptions();
+        audioOptions.noiseSuppression = true;
+        AudioSource audioSource = factory.createAudioSource(audioOptions);
+        audioTrack = factory.createAudioTrack("AUDIO", audioSource);
+        track = factory.createVideoTrack("CAM", vid);
+
+        sink = new VideoTrackSink() {
+            @Override
+            public void onVideoFrame(VideoFrame videoFrame) {
+                if (killed) {
+                    vid.dispose();
+                }
+//
+                if (System.currentTimeMillis() - time < 1000d / 30d) return; //Give me 30 FPS!
+
+                time = System.currentTimeMillis();
+                I420Buffer raw = videoFrame.buffer.toI420();
+//                raw.retain();
+
+                FrameConverter.queue(raw);
+                //This is potentially where we sync the frames into opencv??
+            }
+        };
+        track.addSink(sink);
     }
 }
 

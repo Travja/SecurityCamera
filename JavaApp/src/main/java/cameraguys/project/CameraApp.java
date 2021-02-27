@@ -16,21 +16,28 @@ import java.nio.file.Path;
 public class CameraApp extends Application {
 
     public static void main(String[] args) {
-        InputStream in = CameraApp.class.getClassLoader().getResourceAsStream("opencv_java3413.dll");
+        extract("opencv_java3413.dll");
+//        extract("webrtc-java.dll");
+
+        System.load(new File("lib", "opencv_java3413.dll").getAbsolutePath());
+        System.out.println("Loaded OpenCV");
+//        System.load(new File("lib", "webrtc-java.dll").getAbsolutePath());
+//        System.out.println("Loaded WebRTC");
+        launch(args);
+    }
+
+    public static void extract(String dllName) {
+        InputStream in = CameraApp.class.getClassLoader().getResourceAsStream(dllName);
         if (!new File("lib").exists())
             new File("lib").mkdirs();
-        Path path = new File("lib", "opencv_java3413.dll").toPath();
-        if (!new File("lib", "opencv_java3413.dll").exists() && in != null) {
+        Path path = new File("lib", dllName).toPath();
+        if (!new File("lib", dllName).exists() && in != null) {
             try {
                 Files.copy(in, path);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
-
-        System.load(new File("lib", "opencv_java3413.dll").getAbsolutePath());
-        System.out.println("Loaded OpenCV");
-        launch(args);
     }
 
     public static void openCameraWindow(Stage primaryStage) {

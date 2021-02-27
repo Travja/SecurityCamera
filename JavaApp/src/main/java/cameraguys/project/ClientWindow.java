@@ -2,7 +2,6 @@ package cameraguys.project;
 
 import cameraguys.project.http.ConnectionInformation;
 import cameraguys.project.http.HttpFileUpload;
-import cameraguys.project.webserver.HttpStreamServer;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -23,7 +22,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -32,7 +30,8 @@ public class ClientWindow {
     private static final double MIN_AREA = 50;//Disturbance has to be more than this area to be identified.
     private static final String NOTIFY_ENDPOINT = "/api/notify";
     static Timer tmrVideoProcess;
-    private static HttpStreamServer httpStreamService;
+    private static ClientWindow inst;
+    //    private static HttpStreamServer httpStreamService;
     @FXML
     private Button startBtn;
     @FXML
@@ -52,6 +51,14 @@ public class ClientWindow {
     private long initialMotion = 0l;
     private long lastMotion = 0l;
     private ConnectionInformation connInfo = ConnectionInformation.load();
+
+    public ClientWindow() {
+        inst = this;
+    }
+
+    public static ClientWindow inst() {
+        return inst;
+    }
 
     public ArrayList<Rect> findContours(Mat outmat) {
         Mat v = new Mat();
@@ -88,6 +95,7 @@ public class ClientWindow {
                 //This draws outline on the final image with red contours.
 //                Imgproc.drawContours(ret, contours, maxAreaIdx, new Scalar(0, 0, 255));
             }
+            contour.release();
         }
         if (min != null && max != null) {
             masterRect = new Rect((int) min.x, (int) min.y, (int) (max.x - min.x), (int) (max.y - min.y));
@@ -96,6 +104,7 @@ public class ClientWindow {
         }
 
         v.release();
+        vv.release();
         return rect_array;
 
     }
@@ -113,12 +122,14 @@ public class ClientWindow {
 
     @FXML
     protected void startCamera(ActionEvent event) {
-        capture = new VideoCapture();
-        httpStreamService = new HttpStreamServer(displayFrame);
-        new Thread(httpStreamService).start();
-        Runnable frameGrabber = getGrabber();
-        this.timer = Executors.newSingleThreadScheduledExecutor();
-        this.timer.scheduleAtFixedRate(frameGrabber, 0, 33, TimeUnit.MILLISECONDS);
+        SocketIOBroadcasterClient.main(new String[0]);
+//        capture = new VideoCapture();
+//        Runnable frameGrabber = getGrabber();
+//        this.timer = Executors.newSingleThreadScheduledExecutor();
+//        this.timer.scheduleAtFixedRate(frameGrabber, 0, 33, TimeUnit.MILLISECONDS);
+
+//        httpStreamService = new HttpStreamServer(displayFrame);
+//        new Thread(httpStreamService).start();
     }
 
     private Runnable getGrabber() {
@@ -127,82 +138,103 @@ public class ClientWindow {
             if (this.capture.isOpened()) {
                 Mat initialFrame = new Mat();
                 this.capture.read(initialFrame); //Write the current capture to initialFrame
-                displayFrame = initialFrame.clone(); //Clone it for display purposes.
-                Mat processingFrame = initialFrame.clone(); //This will be changed based on slider to show progress in filters.
-
-                Imgproc.cvtColor(initialFrame, initialFrame, Imgproc.COLOR_BGR2GRAY); //Convert to grayscale
-                if (((int) slider.getValue()) == 0) processingFrame = initialFrame.clone();
-                Imgproc.GaussianBlur(initialFrame, initialFrame, new Size(5, 5), 0); //Blur the image a little to de-noise
-                if (((int) slider.getValue()) == 1) processingFrame = initialFrame.clone();
-
-                if (diffFrame == null) //Initialize the diffFrame if it hasn't already been set.
-                    diffFrame = initialFrame.clone();
-
-                Core.subtract(initialFrame, diffFrame.clone(), diffFrame); //Subtract the previous frame from the current frame.
-                if (((int) slider.getValue()) == 2) processingFrame = diffFrame.clone();
-                Imgproc.adaptiveThreshold(diffFrame, diffFrame, 255, Imgproc.ADAPTIVE_THRESH_MEAN_C, Imgproc.THRESH_BINARY_INV, 5, 2);
-                if (((int) slider.getValue()) == 3) processingFrame = diffFrame.clone();
-
-                List<Rect> array = findContours(diffFrame);
-                int index = 0;
-                if (array.size() > 0) { // Apply the rectangles to the displayFrame
-                    if (!motionDetected) {
-                        System.out.println("Detected motion. Writing video.");
-                        initialMotion = System.currentTimeMillis();
-                        System.out.println(DateUtils.formatString(initialMotion));
-                        outFile = new File("footage", DateUtils.formatString(initialMotion) + ".mp4");
-                    }
-
-                    motionDetected = true;
-                    lastMotion = System.currentTimeMillis();
-
-                    for (Rect rect : array) {
-                        boolean isLast = index++ == array.size() - 1;
-                        int thickness = (isLast ? 3 : 1);
-                        Scalar color = isLast ? new Scalar(0, 0, 255) : new Scalar(0, 255, 0);
-                        Imgproc.rectangle(displayFrame, rect.br(), rect.tl(),
-                                color,
-                                thickness);
-                    }
-
-                }
-
-                if (((int) slider.getValue()) == 4) processingFrame = displayFrame.clone();
-
-                MatOfByte buffer = new MatOfByte();
-                Imgcodecs.imencode(".png", displayFrame, buffer);
-                MatOfByte buf2 = new MatOfByte();
-                Imgcodecs.imencode(".png", processingFrame, buf2);
-
-                if (motionDetected) {
-                    //If it's been at least 3 seconds since the last motion and there hasn't been sustained motion, scrap the recording.
-                    if (System.currentTimeMillis() - initialMotion >= 3000 && lastMotion - initialMotion < 2000) {
-                        System.out.println("Deleting useless video.");
-                        stopVideo();
-                        outFile.delete();
-                    } else {
-                        if (!sentNotif && System.currentTimeMillis() - initialMotion >= 3000) {
-                            sentNotif = true;
-                            sendEmail(buffer);
-                        }
-                        //If there has been motion in the last 10 seconds, process the video.
-                        if (System.currentTimeMillis() - lastMotion < TimeUnit.SECONDS.toMillis(10))
-                            processVideo(displayFrame);
-                        else {
-                            System.out.println("Motion has ceased.");
-                            stopVideo();
-                        }
-                    }
-                }
-
-                httpStreamService.imag = displayFrame;
-                currentFrame.setImage(new Image(new ByteArrayInputStream(buffer.toArray())));
-                filters.setImage(new Image(new ByteArrayInputStream(buf2.toArray())));
-                diffFrame = initialFrame; //Update diffFrame
+                processFrame(initialFrame);
             } else {
                 System.err.println("Camera feed not started!");
             }
         };
+    }
+
+    public void processFrame(Mat initialFrame) {
+        if (displayFrame != null) displayFrame.release();
+        if(displayFrame == null) displayFrame = new Mat();
+         initialFrame.copyTo(displayFrame); //Clone it for display purposes.
+        Mat processingFrame = initialFrame.clone(); //This will be changed based on slider to show progress in filters.
+
+        if (initialFrame.empty()) {
+            initialFrame.release();
+            return;
+        }
+        Imgproc.cvtColor(initialFrame, initialFrame, Imgproc.COLOR_BGR2GRAY); //Convert to grayscale
+        if (((int) slider.getValue()) == 0) initialFrame.copyTo(processingFrame);
+        Imgproc.GaussianBlur(initialFrame, initialFrame, new Size(5, 5), 0); //Blur the image a little to de-noise
+        if (((int) slider.getValue()) == 1) initialFrame.copyTo(processingFrame);
+
+        if (diffFrame == null || diffFrame.width() != initialFrame.width()) { //Initialize the diffFrame if it hasn't already been set.
+            if (diffFrame == null) diffFrame = new Mat();
+            initialFrame.copyTo(diffFrame);
+        }
+
+        Core.subtract(initialFrame, diffFrame, diffFrame); //Subtract the previous frame from the current frame.
+        if (((int) slider.getValue()) == 2) diffFrame.copyTo(processingFrame);
+        Imgproc.adaptiveThreshold(diffFrame, diffFrame, 255, Imgproc.ADAPTIVE_THRESH_MEAN_C, Imgproc.THRESH_BINARY_INV, 5, 2);
+        if (((int) slider.getValue()) == 3) diffFrame.copyTo(processingFrame);
+
+        List<Rect> array = findContours(diffFrame);
+        int index = 0;
+        if (array.size() > 0) { // Apply the rectangles to the displayFrame
+            if (!motionDetected) {
+                System.out.println("Detected motion. Writing video.");
+                initialMotion = System.currentTimeMillis();
+                System.out.println(DateUtils.formatString(initialMotion));
+                outFile = new File("footage", DateUtils.formatString(initialMotion) + ".mp4");
+            }
+
+            motionDetected = true;
+            lastMotion = System.currentTimeMillis();
+
+            for (Rect rect : array) {
+                boolean isLast = index++ == array.size() - 1;
+                int thickness = (isLast ? 3 : 1);
+                Scalar color = isLast ? new Scalar(0, 0, 255) : new Scalar(0, 255, 0);
+                Imgproc.rectangle(displayFrame, rect.br(), rect.tl(),
+                        color,
+                        thickness);
+            }
+
+        }
+
+        if (((int) slider.getValue()) == 4)diffFrame.copyTo(processingFrame);
+
+        MatOfByte buffer = new MatOfByte();
+        Imgcodecs.imencode(".png", displayFrame, buffer);
+        MatOfByte buf2 = new MatOfByte();
+        Imgcodecs.imencode(".png", processingFrame, buf2);
+
+        if (motionDetected) {
+            //If it's been at least 3 seconds since the last motion and there hasn't been sustained motion, scrap the recording.
+            if (System.currentTimeMillis() - initialMotion >= 3000 && lastMotion - initialMotion < 2000) {
+                System.out.println("Deleting useless video.");
+                stopVideo();
+                outFile.delete();
+            } else {
+                if (!sentNotif && System.currentTimeMillis() - initialMotion >= 3000) {
+                    sentNotif = true;
+                    sendEmail(buffer);
+                }
+                //If there has been motion in the last 10 seconds, process the video.
+                if (System.currentTimeMillis() - lastMotion < TimeUnit.SECONDS.toMillis(10))
+                    processVideo(displayFrame);
+                else {
+                    System.out.println("Motion has ceased.");
+                    stopVideo();
+
+                    //TODO Send video to server
+
+                }
+            }
+        }
+
+//        httpStreamService.imag = displayFrame;
+        currentFrame.setImage(new Image(new ByteArrayInputStream(buffer.toArray())));
+        filters.setImage(new Image(new ByteArrayInputStream(buf2.toArray())));
+        initialFrame.copyTo(diffFrame);
+        diffFrame = initialFrame; //Update diffFrame
+        initialFrame.release();
+        processingFrame.release();
+        buffer.release();
+        buf2.release();
+        System.gc();
     }
 
     private void sendEmail(MatOfByte buffer) {
@@ -257,8 +289,10 @@ public class ClientWindow {
     public void setClosed() {
         stopFrames();
         stopVideo();
-        if (httpStreamService != null && httpStreamService.isRunning())
-            httpStreamService.stopServer();
+        SocketIOBroadcasterClient.kill();
+
+//        if (httpStreamService != null && httpStreamService.isRunning())
+//            httpStreamService.stopServer();
     }
 
     private void processVideo(Mat frame) {

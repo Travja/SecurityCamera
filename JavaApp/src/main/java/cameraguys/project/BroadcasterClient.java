@@ -41,11 +41,11 @@ public class BroadcasterClient {
         //In socket.io, this is not called.
         socket.on("open", objects -> {
 
-            System.out.println(Arrays.toString(objects));
-            System.out.println(socket);
+//            System.out.println(Arrays.toString(objects));
+//            System.out.println(socket);
             try {
                 String data = new JSONObject().put("event", "broadcaster").toString();
-                System.out.println(data);
+//                System.out.println(data);
                 socket.send("{\"event\": \"ping\"}");
                 //socket.send(data);
             } catch (JSONException e) {
@@ -111,7 +111,7 @@ public class BroadcasterClient {
                     case "answer":
                         id = data.getString("id");
                         RTCSessionDescription description = (RTCSessionDescription) data.get("message");
-                        System.out.println("id:" + id);
+//                        System.out.println("id:" + id);
                         peerConnections.get(id).setRemoteDescription(description, new SetSessionDescriptionObserver() {
                             @Override
                             public void onSuccess() {

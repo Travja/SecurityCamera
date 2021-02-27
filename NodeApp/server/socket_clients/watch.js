@@ -34,12 +34,12 @@ socket.on("offer", (id, description) => {
             socket.emit("answer", id, peerConnection.localDescription);
         });
     peerConnection.ontrack = event => {
-        console.log("Track Event" + event);
+        // console.log("Track Event" + event);
 
-        for(let i = 0; i < event.streams.length; i++) {
-            console.log("I::"+ i);
-            console.log(event.streams[i]);
-        }
+        // for (let i = 0; i < event.streams.length; i++) {
+        //     console.log("I::" + i);
+        //     console.log(event.streams[i]);
+        // }
         // let new_stream = new MediaStream()
         // let video_track_from_stream = event.streams[0].getTracks()[0];
         // let audio_track_from_stream = event.streams[0].getTracks()[1];
