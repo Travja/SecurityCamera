@@ -19,6 +19,9 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -38,19 +41,24 @@ public class ClientWindow {
     private ImageView currentFrame, filters;
     @FXML
     private Slider slider;
-    private VideoCapture capture;
+    private VideoCapture capture = new VideoCapture();
     private ScheduledExecutorService timer;
     private boolean cameraActive = false;
-    private Mat diffFrame, displayFrame;
+    private Mat camFrame = new Mat();
+    private Mat diffFrame = new Mat();
+    private Mat displayFrame = new Mat();
+    private Mat processingFrame = new Mat();
     private int stage = 0;
     private boolean outlineSmallerContours = false, outlineAll = true;
-    private VideoWriter writer = null;
+    private VideoWriter writer = new VideoWriter();
     private File outFile = null; //Set upon motion detected.
     private boolean motionDetected = false,
             sentNotif = false;
     private long initialMotion = 0l;
     private long lastMotion = 0l;
     private ConnectionInformation connInfo = ConnectionInformation.load();
+
+    private long lastGC = System.currentTimeMillis();
 
     public ClientWindow() {
         inst = this;
@@ -60,11 +68,25 @@ public class ClientWindow {
         return inst;
     }
 
-    public ArrayList<Rect> findContours(Mat outmat) {
+    public static void clean(ByteBuffer buffer) {
+        try {
+            Method cleanerMethod = buffer.getClass().getMethod("cleaner");
+            cleanerMethod.setAccessible(true);
+            Object cleaner = cleanerMethod.invoke(buffer);
+            if (cleaner != null) {
+                Method cleanMethod = cleaner.getClass().getMethod("clean");
+                cleanMethod.setAccessible(true);
+                cleanMethod.invoke(cleaner);
+            }
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public ArrayList<Rect> findContours(Mat inputmat) {
         Mat v = new Mat();
-        Mat vv = outmat.clone();
         List<MatOfPoint> contours = new ArrayList<>();
-        Imgproc.findContours(vv, contours, v, Imgproc.RETR_LIST,
+        Imgproc.findContours(inputmat, contours, v, Imgproc.RETR_LIST,
                 Imgproc.CHAIN_APPROX_SIMPLE);
 
         int maxAreaIdx;
@@ -75,7 +97,7 @@ public class ClientWindow {
         Point max = null;
 
         for (int idx = 0; idx < contours.size(); idx++) {
-            Mat contour = contours.get(idx);
+            MatOfPoint contour = contours.get(idx);
             double contourarea = Imgproc.contourArea(contour);
             if (contourarea > MIN_AREA) {
                 maxAreaIdx = idx;
@@ -95,16 +117,18 @@ public class ClientWindow {
                 //This draws outline on the final image with red contours.
 //                Imgproc.drawContours(ret, contours, maxAreaIdx, new Scalar(0, 0, 255));
             }
-            contour.release();
         }
+
+        contours.forEach(cont -> cont.free());
+        contours.clear();
+
         if (min != null && max != null) {
             masterRect = new Rect((int) min.x, (int) min.y, (int) (max.x - min.x), (int) (max.y - min.y));
             if (outlineAll)
                 rect_array.add(masterRect);
         }
 
-        v.release();
-        vv.release();
+        v.free();
         return rect_array;
 
     }
@@ -123,7 +147,7 @@ public class ClientWindow {
     @FXML
     protected void startCamera(ActionEvent event) {
         SocketIOBroadcasterClient.main(new String[0]);
-//        capture = new VideoCapture();
+//
 //        Runnable frameGrabber = getGrabber();
 //        this.timer = Executors.newSingleThreadScheduledExecutor();
 //        this.timer.scheduleAtFixedRate(frameGrabber, 0, 33, TimeUnit.MILLISECONDS);
@@ -136,9 +160,8 @@ public class ClientWindow {
         return () -> {
             openCamera();
             if (this.capture.isOpened()) {
-                Mat initialFrame = new Mat();
-                this.capture.read(initialFrame); //Write the current capture to initialFrame
-                processFrame(initialFrame);
+                this.capture.read(camFrame); //Write the current capture to initialFrame
+                processFrame(camFrame);
             } else {
                 System.err.println("Camera feed not started!");
             }
@@ -146,24 +169,18 @@ public class ClientWindow {
     }
 
     public void processFrame(Mat initialFrame) {
-        if (displayFrame != null) displayFrame.release();
-        if(displayFrame == null) displayFrame = new Mat();
-         initialFrame.copyTo(displayFrame); //Clone it for display purposes.
-        Mat processingFrame = initialFrame.clone(); //This will be changed based on slider to show progress in filters.
+        initialFrame.copyTo(displayFrame); //Clone it for display purposes.
+        initialFrame.copyTo(processingFrame); //This will be changed based on slider to show progress in filters.
 
-        if (initialFrame.empty()) {
-            initialFrame.release();
-            return;
-        }
-        Imgproc.cvtColor(initialFrame, initialFrame, Imgproc.COLOR_BGR2GRAY); //Convert to grayscale
+        if (initialFrame.empty()) return;
+
+        Imgproc.cvtColor(initialFrame, initialFrame, Imgproc.COLOR_BGRA2GRAY); //Convert to grayscale
         if (((int) slider.getValue()) == 0) initialFrame.copyTo(processingFrame);
         Imgproc.GaussianBlur(initialFrame, initialFrame, new Size(5, 5), 0); //Blur the image a little to de-noise
         if (((int) slider.getValue()) == 1) initialFrame.copyTo(processingFrame);
 
-        if (diffFrame == null || diffFrame.width() != initialFrame.width()) { //Initialize the diffFrame if it hasn't already been set.
-            if (diffFrame == null) diffFrame = new Mat();
+        if (diffFrame.empty() || diffFrame.width() != initialFrame.width())
             initialFrame.copyTo(diffFrame);
-        }
 
         Core.subtract(initialFrame, diffFrame, diffFrame); //Subtract the previous frame from the current frame.
         if (((int) slider.getValue()) == 2) diffFrame.copyTo(processingFrame);
@@ -194,7 +211,7 @@ public class ClientWindow {
 
         }
 
-        if (((int) slider.getValue()) == 4)diffFrame.copyTo(processingFrame);
+        if (((int) slider.getValue()) == 4) diffFrame.copyTo(processingFrame);
 
         MatOfByte buffer = new MatOfByte();
         Imgcodecs.imencode(".png", displayFrame, buffer);
@@ -226,15 +243,26 @@ public class ClientWindow {
         }
 
 //        httpStreamService.imag = displayFrame;
-        currentFrame.setImage(new Image(new ByteArrayInputStream(buffer.toArray())));
-        filters.setImage(new Image(new ByteArrayInputStream(buf2.toArray())));
-        initialFrame.copyTo(diffFrame);
-        diffFrame = initialFrame; //Update diffFrame
-        initialFrame.release();
-        processingFrame.release();
+        ByteArrayInputStream bin = new ByteArrayInputStream(buffer.toArray());
+        ByteArrayInputStream bin2 = new ByteArrayInputStream(buf2.toArray());
+        Image img1 = new Image(bin);
+        Image img2 = new Image(bin2);
+        currentFrame.setImage(img1);
+        filters.setImage(img2);
+        initialFrame.copyTo(diffFrame); //Update diffFrame
+        try {
+            bin.close();
+            bin2.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         buffer.release();
         buf2.release();
-        System.gc();
+        if (System.currentTimeMillis() - lastGC > 10000) {
+            System.gc();
+
+            lastGC = System.currentTimeMillis();
+        }
     }
 
     private void sendEmail(MatOfByte buffer) {
@@ -278,7 +306,7 @@ public class ClientWindow {
             }
         }
 
-        if (this.capture != null && this.capture.isOpened()) {
+        if (this.capture != null) {
             // release the camera
             this.capture.release();
         }
@@ -296,12 +324,12 @@ public class ClientWindow {
     }
 
     private void processVideo(Mat frame) {
-        if (writer == null || !writer.isOpened()) {
+        if (!writer.isOpened()) {
 //            int fourcc = VideoWriter.fourcc('M', 'P', '4', 'V');
             int fourcc = VideoWriter.fourcc('H', '2', '6', '4');
             if (!outFile.exists())
                 outFile.getParentFile().mkdirs();
-            writer = new VideoWriter(outFile.getAbsolutePath(), fourcc, 1000d / 33d, frame.size());
+            writer.open(outFile.getAbsolutePath(), fourcc, 1000d / 33d, frame.size());
         }
 
         if (writer.isOpened())
@@ -314,7 +342,7 @@ public class ClientWindow {
     private void stopVideo() {
         sentNotif = false;
         motionDetected = false;
-        if (writer != null && writer.isOpened())
+        if (writer != null)
             writer.release();
     }
 }

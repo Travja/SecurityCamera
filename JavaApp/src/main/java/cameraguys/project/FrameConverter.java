@@ -1,15 +1,12 @@
 package cameraguys.project;
 
 import dev.onvoid.webrtc.media.video.I420Buffer;
+import dev.onvoid.webrtc.media.video.VideoFrame;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 
-import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferByte;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.LinkedList;
 
@@ -19,11 +16,16 @@ public class FrameConverter {
     private static boolean started = false;
     private static boolean processing = false;
 
-    public static void queue(I420Buffer raw) {
+    public static void queue(VideoFrame videoFrame) {
         if (!processing) {
             processing = true;
+            I420Buffer raw = videoFrame.buffer.toI420();
             convertAndSendMat(raw);
+            raw.release();
+            videoFrame.release();
             processing = false;
+        } else {
+            videoFrame.release();
         }
 //        stack.addLast(raw);
 //        start();
@@ -52,16 +54,15 @@ public class FrameConverter {
     }
 
     private static void convertAndSendMat(I420Buffer raw) {
-        //                    int bufferSize = raw.getWidth() * raw.getHeight() * 4;
+        int bufferSize = raw.getWidth() * raw.getHeight() * 4;
 
-        int stride = raw.getStrideY();
         int length = raw.getStrideU();
 
         ByteBuffer y = raw.getDataY();
         ByteBuffer u = raw.getDataU();
         ByteBuffer v = raw.getDataV();
 
-        Mat mat = new Mat((int) (stride / 1.5), length * 2, CvType.CV_8UC3);
+        Mat mat = new Mat(raw.getHeight(), raw.getWidth(), CvType.CV_8UC3);
 
         int row = 0;
         int column = 0;
@@ -117,39 +118,73 @@ public class FrameConverter {
                 row++;
             }
         }
+        if (y.isDirect())
+            ClientWindow.clean(y);
+        if (u.isDirect())
+            ClientWindow.clean(u);
+        if (v.isDirect())
+            ClientWindow.clean(v);
 
+//        ByteBuffer buff = ByteBuffer.allocate(bufferSize);
+//        try {
+//            VideoBufferConverter.convertFromI420(raw, buff, FourCC.RGBA);
+//            Mat mat = FrameConverter.toMat(stride, length, buff.array());
+//            if (buff.isDirect())
+//                ClientWindow.clean(buff);
 
-//                    ByteBuffer buff = ByteBuffer.allocate(bufferSize);
-        try {
-//                        VideoBufferConverter.convertFromI420(raw, buff, FourCC.RGBA);
-//                        Mat mat = FrameConverter.toMat(stride, length, buff.array());
-
-            ClientWindow.inst().processFrame(mat);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        ClientWindow.inst().processFrame(mat);
+        mat.free();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
     }
 
     public static Mat toMat(int width, int height, byte[] buffer) {
-        ByteArrayInputStream bios = new ByteArrayInputStream(buffer);
-        try {
-            BufferedImage buf = ImageIO.read(bios);
-            System.out.println("Buf Image null? " + (buf == null));
-            byte[] pixels = ((DataBufferByte) buf.getRaster().getDataBuffer()).getData();
-            Mat m = new Mat(buf.getHeight(), buf.getWidth(), CvType.CV_8UC3);
-            m.put(0, 0, pixels);
-            return m;
-        } catch (IOException e) {
-            e.printStackTrace();
+        int row = 0;
+        int column = 0;
+        System.out.println(width + "," + height + " -- " + buffer.length);
+        Mat mat = new Mat((int) (height * 1.5), width, CvType.CV_32SC3);
+
+        for (int i = 0; i < buffer.length; ) {
+            int a = buffer[i++];
+            int b = buffer[i++];
+            int g = buffer[i++];
+            int r = buffer[i++];
+//            int a2 = buffer[i++];
+//            int b2 = buffer[i++];
+//            int g2 = buffer[i++];
+//            int r2 = buffer[i++];
+//            int x = buffer[i++];
+//            int x1 = buffer[i++];
+
+            if (a < 0) a = a + 255;
+            if (r < 0) r = r + 255;
+            if (g < 0) g = g + 255;
+            if (b < 0) b = b + 255;
+
+            int[] bgr = {r, b, g};
+
+            mat.put(row, column++, bgr);
+            if (column >= width) {
+                column = 0;
+                row++;
+            }
         }
-//        MatOfByte mat = new MatOfByte();
-//        System.out.println(buffer.length);
-//        ByteBuffer buf = ByteBuffer.wrap(buffer);
-//        Mat m = new Mat(height, width, CvType.CV_32SC3, buf);
-//
-//        Mat m2 = Imgcodecs
-//                .imdecode(m, Imgcodecs.CV_LOAD_IMAGE_UNCHANGED);
-        return null;
+
+        return mat;
+
+
+//        try {
+//            BufferedImage buf = ImageIO.read(bios);
+//            System.out.println("Buf Image null? " + (buf == null));
+//            byte[] pixels = ((DataBufferByte) buf.getRaster().getDataBuffer()).getData();
+//            Mat m = new Mat(buf.getHeight(), buf.getWidth(), CvType.CV_8UC3);
+//            m.put(0, 0, pixels);
+//            return m;
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        return null;
     }
 
     /**

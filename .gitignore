@@ -11,3 +11,4 @@ NodeApp/build
 server.conf
 footage/
 lib/
+out/
