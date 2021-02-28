@@ -2,6 +2,7 @@ package cameraguys.project;
 
 import cameraguys.project.http.ConnectionInformation;
 import cameraguys.project.http.HttpFileUpload;
+import cameraguys.project.socketio.SocketIOBroadcasterClient;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -14,51 +15,51 @@ import org.opencv.imgproc.Imgproc;
 import org.opencv.videoio.VideoCapture;
 import org.opencv.videoio.VideoWriter;
 
-import javax.swing.*;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class ClientWindow {
 
+    public static final int fps = 10;
     private static final double MIN_AREA = 50;//Disturbance has to be more than this area to be identified.
     private static final String NOTIFY_ENDPOINT = "/api/notify";
-    static Timer tmrVideoProcess;
     private static ClientWindow inst;
-    //    private static HttpStreamServer httpStreamService;
+
+    private final ConnectionInformation connInfo = ConnectionInformation.load();
+    private final VideoCapture capture = new VideoCapture();
+    private final Mat camFrame = new Mat();
+    private final Mat diffFrame = new Mat();
+    private final Mat displayFrame = new Mat();
+    private final Mat processingFrame = new Mat();
+    private final VideoWriter writer = new VideoWriter();
+    private final boolean outlineSmallerContours = false;
+    private final boolean outlineAll = true;
+    private final SocketIOBroadcasterClient socketio = new SocketIOBroadcasterClient();
     @FXML
     private Button startBtn;
     @FXML
     private ImageView currentFrame, filters;
     @FXML
     private Slider slider;
-    private VideoCapture capture = new VideoCapture();
-    private ScheduledExecutorService timer;
-    private boolean cameraActive = false;
-    private Mat camFrame = new Mat();
-    private Mat diffFrame = new Mat();
-    private Mat displayFrame = new Mat();
-    private Mat processingFrame = new Mat();
-    private int stage = 0;
-    private boolean outlineSmallerContours = false, outlineAll = true;
-    private VideoWriter writer = new VideoWriter();
     private File outFile = null; //Set upon motion detected.
-    private boolean motionDetected = false,
-            sentNotif = false;
     private long initialMotion = 0l;
     private long lastMotion = 0l;
-    private ConnectionInformation connInfo = ConnectionInformation.load();
-
     private long lastGC = System.currentTimeMillis();
+    private boolean cameraActive = false;
+    private boolean motionDetected = false,
+            sentNotif = false;
+
+//    Can probably be deleted after we verify everything works as-is
+//    private ScheduledExecutorService timer;
+//    private static Timer tmrVideoProcess;
+//    private static HttpStreamServer httpStreamService;
+//    private int stage = 0;
 
     public ClientWindow() {
         inst = this;
@@ -68,18 +69,37 @@ public class ClientWindow {
         return inst;
     }
 
-    public static void clean(ByteBuffer buffer) {
-        try {
-            Method cleanerMethod = buffer.getClass().getMethod("cleaner");
-            cleanerMethod.setAccessible(true);
-            Object cleaner = cleanerMethod.invoke(buffer);
-            if (cleaner != null) {
-                Method cleanMethod = cleaner.getClass().getMethod("clean");
-                cleanMethod.setAccessible(true);
-                cleanMethod.invoke(cleaner);
+    public SocketIOBroadcasterClient getSocket() {
+        return socketio;
+    }
+
+    @FXML
+    protected void startCamera(ActionEvent event) {
+        if (startBtn.getText().equals("Stop Camera")) {
+            startBtn.setText("Start Camera");
+            stopVideo();
+
+            if (System.currentTimeMillis() - initialMotion >= 3000 && lastMotion - initialMotion < 2000) {
+                System.out.println("Deleting useless video.");
+                outFile.delete();
+            } else {
+                //If there has been motion in the last 10 seconds, process the video.
+                if (System.currentTimeMillis() - lastMotion > TimeUnit.SECONDS.toMillis(10)) {
+                    System.out.println("Motion has ceased.");
+                    sendVideoToServer();
+                }
             }
-        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-            e.printStackTrace();
+            socketio.halt();
+        } else {
+            socketio.start();
+            startBtn.setText("Stop Camera");
+
+//        Runnable frameGrabber = getGrabber();
+//        this.timer = Executors.newSingleThreadScheduledExecutor();
+//        this.timer.scheduleAtFixedRate(frameGrabber, 0, 1000d / fps, TimeUnit.MILLISECONDS);
+
+//        httpStreamService = new HttpStreamServer(displayFrame);
+//        new Thread(httpStreamService).start();
         }
     }
 
@@ -124,48 +144,14 @@ public class ClientWindow {
 
         if (min != null && max != null) {
             masterRect = new Rect((int) min.x, (int) min.y, (int) (max.x - min.x), (int) (max.y - min.y));
-            if (outlineAll)
+            if (outlineAll) {
                 rect_array.add(masterRect);
+            }
         }
 
         v.free();
         return rect_array;
 
-    }
-
-    private void openCamera() {
-        if (!cameraActive) {
-            System.out.println("Attempting to open feed.");
-            cameraActive = capture.open(0, 700);
-            if (cameraActive)
-                System.out.println("Feed opened.");
-            else
-                System.out.println("Could not start camera feed.");
-        }
-    }
-
-    @FXML
-    protected void startCamera(ActionEvent event) {
-        SocketIOBroadcasterClient.main(new String[0]);
-//
-//        Runnable frameGrabber = getGrabber();
-//        this.timer = Executors.newSingleThreadScheduledExecutor();
-//        this.timer.scheduleAtFixedRate(frameGrabber, 0, 33, TimeUnit.MILLISECONDS);
-
-//        httpStreamService = new HttpStreamServer(displayFrame);
-//        new Thread(httpStreamService).start();
-    }
-
-    private Runnable getGrabber() {
-        return () -> {
-            openCamera();
-            if (this.capture.isOpened()) {
-                this.capture.read(camFrame); //Write the current capture to initialFrame
-                processFrame(camFrame);
-            } else {
-                System.err.println("Camera feed not started!");
-            }
-        };
     }
 
     public void processFrame(Mat initialFrame) {
@@ -211,7 +197,7 @@ public class ClientWindow {
 
         }
 
-        if (((int) slider.getValue()) == 4) diffFrame.copyTo(processingFrame);
+        if (((int) slider.getValue()) == 4) displayFrame.copyTo(processingFrame);
 
         MatOfByte buffer = new MatOfByte();
         Imgcodecs.imencode(".png", displayFrame, buffer);
@@ -230,14 +216,16 @@ public class ClientWindow {
                     sendEmail(buffer);
                 }
                 //If there has been motion in the last 10 seconds, process the video.
-                if (System.currentTimeMillis() - lastMotion < TimeUnit.SECONDS.toMillis(10))
-                    processVideo(displayFrame);
-                else {
+                if (System.currentTimeMillis() - lastMotion < TimeUnit.SECONDS.toMillis(10)) {
+//                    System.out.println("Write frame");
+                    Mat mat = new Mat();
+                    displayFrame.copyTo(mat);
+                    processVideo(mat);
+                    mat.free();
+                } else {
                     System.out.println("Motion has ceased.");
                     stopVideo();
-
-                    //TODO Send video to server
-
+                    sendVideoToServer();
                 }
             }
         }
@@ -295,16 +283,16 @@ public class ClientWindow {
     }
 
     private void stopFrames() {
-        if (this.timer != null && !this.timer.isShutdown()) {
-            try {
-                // stop the timer
-                this.timer.shutdown();
-                this.timer.awaitTermination(33, TimeUnit.MILLISECONDS);
-            } catch (InterruptedException e) {
-                // log any exception
-                System.err.println("Exception in stopping the frame capture, trying to release the camera now... " + e);
-            }
-        }
+//        if (this.timer != null && !this.timer.isShutdown()) {
+//            try {
+        // stop the timer
+//                this.timer.shutdown();
+//                this.timer.awaitTermination((long) (1000d / fps), TimeUnit.MILLISECONDS);
+//            } catch (InterruptedException e) {
+//                // log any exception
+//                System.err.println("Exception in stopping the frame capture, trying to release the camera now... " + e);
+//            }
+//        }
 
         if (this.capture != null) {
             // release the camera
@@ -317,7 +305,7 @@ public class ClientWindow {
     public void setClosed() {
         stopFrames();
         stopVideo();
-        SocketIOBroadcasterClient.kill();
+        socketio.kill();
 
 //        if (httpStreamService != null && httpStreamService.isRunning())
 //            httpStreamService.stopServer();
@@ -329,12 +317,12 @@ public class ClientWindow {
             int fourcc = VideoWriter.fourcc('H', '2', '6', '4');
             if (!outFile.exists())
                 outFile.getParentFile().mkdirs();
-            writer.open(outFile.getAbsolutePath(), fourcc, 1000d / 33d, frame.size());
+            writer.open(outFile.getAbsolutePath(), fourcc, fps, frame.size());
         }
 
-        if (writer.isOpened())
+        if (writer.isOpened()) {
             writer.write(frame);
-        else {
+        } else {
             System.err.println("Could not write video.");
         }
     }
@@ -345,4 +333,49 @@ public class ClientWindow {
         if (writer != null)
             writer.release();
     }
+
+    private void sendVideoToServer() {
+        File file = new File(outFile.getAbsolutePath());
+        //TODO Actually send it, wait for response, and delete local file.
+        System.out.println("Uploading video....");
+    }
+
+//    private void openCamera() {
+//        if (!cameraActive) {
+//            System.out.println("Attempting to open feed.");
+//            cameraActive = capture.open(0, 700);
+//            if (cameraActive)
+//                System.out.println("Feed opened.");
+//            else
+//                System.out.println("Could not start camera feed.");
+//        }
+//    }
+
+    //    public static void clean(ByteBuffer buffer) {
+//        try {
+//            Method cleanerMethod = buffer.getClass().getMethod("cleaner");
+//            cleanerMethod.setAccessible(true);
+//            Object cleaner = cleanerMethod.invoke(buffer);
+//            if (cleaner != null) {
+//                Method cleanMethod = cleaner.getClass().getMethod("clean");
+//                cleanMethod.setAccessible(true);
+//                cleanMethod.invoke(cleaner);
+//            }
+//        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+//            e.printStackTrace();
+//        }
+//    }
+
+//    private Runnable getGrabber() {
+//        return () -> {
+//            openCamera();
+//            if (this.capture.isOpened()) {
+//                this.capture.read(camFrame); //Write the current capture to initialFrame
+//                processFrame(camFrame);
+//            } else {
+//                System.err.println("Camera feed not started!");
+//            }
+//        };
+//    }
+
 }

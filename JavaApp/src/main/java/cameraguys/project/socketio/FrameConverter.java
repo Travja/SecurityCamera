@@ -1,5 +1,6 @@
-package cameraguys.project;
+package cameraguys.project.socketio;
 
+import cameraguys.project.ClientWindow;
 import dev.onvoid.webrtc.media.video.I420Buffer;
 import dev.onvoid.webrtc.media.video.VideoFrame;
 import org.opencv.core.CvType;
@@ -8,49 +9,20 @@ import org.opencv.core.Mat;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
-import java.util.LinkedList;
 
 public class FrameConverter {
 
-    private static LinkedList<I420Buffer> stack = new LinkedList<>();
     private static boolean started = false;
     private static boolean processing = false;
 
     public static void queue(VideoFrame videoFrame) {
-        if (!processing) {
-            processing = true;
-            I420Buffer raw = videoFrame.buffer.toI420();
-            convertAndSendMat(raw);
-            raw.release();
-//            videoFrame.release();
-            processing = false;
-        } else {
-//            videoFrame.release();
-        }
-//        stack.addLast(raw);
-//        start();
-    }
+        if (processing) return;
 
-    private static void start() {
-        if (started) return;
-
-        started = true;
-        new Thread(() -> {
-            while (true) {
-
-                if (stack.size() > 0) {
-                    I420Buffer raw = stack.getFirst();
-                    convertAndSendMat(raw);
-                    stack.pop();
-                    raw.release();
-//                try {
-//                    Thread.sleep(33);
-//                } catch (InterruptedException e) {
-//                    e.printStackTrace();
-//                }
-                }
-            }
-        }).start();
+        processing = true;
+        I420Buffer raw = videoFrame.buffer.toI420();
+        convertAndSendMat(raw);
+        raw.release();
+        processing = false;
     }
 
     private static void convertAndSendMat(I420Buffer raw) {
@@ -118,12 +90,12 @@ public class FrameConverter {
                 row++;
             }
         }
-        if (y.isDirect())
-            ClientWindow.clean(y);
-        if (u.isDirect())
-            ClientWindow.clean(u);
-        if (v.isDirect())
-            ClientWindow.clean(v);
+//        if (y.isDirect())
+//            ClientWindow.clean(y);
+//        if (u.isDirect())
+//            ClientWindow.clean(u);
+//        if (v.isDirect())
+//            ClientWindow.clean(v);
 
 //        ByteBuffer buff = ByteBuffer.allocate(bufferSize);
 //        try {
@@ -137,54 +109,6 @@ public class FrameConverter {
 //        } catch (Exception e) {
 //            e.printStackTrace();
 //        }
-    }
-
-    public static Mat toMat(int width, int height, byte[] buffer) {
-        int row = 0;
-        int column = 0;
-        System.out.println(width + "," + height + " -- " + buffer.length);
-        Mat mat = new Mat((int) (height * 1.5), width, CvType.CV_32SC3);
-
-        for (int i = 0; i < buffer.length; ) {
-            int a = buffer[i++];
-            int b = buffer[i++];
-            int g = buffer[i++];
-            int r = buffer[i++];
-//            int a2 = buffer[i++];
-//            int b2 = buffer[i++];
-//            int g2 = buffer[i++];
-//            int r2 = buffer[i++];
-//            int x = buffer[i++];
-//            int x1 = buffer[i++];
-
-            if (a < 0) a = a + 255;
-            if (r < 0) r = r + 255;
-            if (g < 0) g = g + 255;
-            if (b < 0) b = b + 255;
-
-            int[] bgr = {r, b, g};
-
-            mat.put(row, column++, bgr);
-            if (column >= width) {
-                column = 0;
-                row++;
-            }
-        }
-
-        return mat;
-
-
-//        try {
-//            BufferedImage buf = ImageIO.read(bios);
-//            System.out.println("Buf Image null? " + (buf == null));
-//            byte[] pixels = ((DataBufferByte) buf.getRaster().getDataBuffer()).getData();
-//            Mat m = new Mat(buf.getHeight(), buf.getWidth(), CvType.CV_8UC3);
-//            m.put(0, 0, pixels);
-//            return m;
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//        return null;
     }
 
     /**
