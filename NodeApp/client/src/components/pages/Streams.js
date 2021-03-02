@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from "react";
-import { StreamingCard } from "../StreamingCard";
+import StreamingCard from "../StreamingCard";
 import { connect } from "react-redux";
 import StreamsAPI from "../../api/Streams";
 
@@ -41,9 +41,7 @@ class Streams extends Component {
               <StreamingCard
                 title={stream.title ? stream.title : new Date().toDateString()}
                 key={stream.id}
-              >
-                <video src={stream.url} width="100%" height="100%"></video>
-              </StreamingCard>
+                />
             );
           }),
         });
@@ -64,7 +62,10 @@ class Streams extends Component {
           ) : (
             <Fragment>
               {streams.length === 0 ? (
-                <h4>No Streams</h4>
+                <>
+                  <h4>No Streams</h4>
+                  <StreamingCard title={new Date().toDateString()} />
+                </>
               ) : (
                 <div
                   style={{

@@ -31,6 +31,15 @@ const general_routes = {
       ],
       routes: [...CameraRoutes, ...AccountRoutes],
     },
+    {
+        url: '/upload-recording',
+        method: ERequestType.POST,
+        handlers: [
+            async (req, res) => {
+                res.send(200);
+            }
+        ]
+    },
   ],
   routers: [],
 };
