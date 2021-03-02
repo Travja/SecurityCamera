@@ -119,8 +119,3 @@ function gotStream(stream) {
 function handleError(error) {
     console.error("Error: ", error);
 }
-
-function getTime(){
-    var date = new Date();
-    return `${date.getMinutes()}:${date.getSeconds()}:${date.getMilliseconds()}`;
-}

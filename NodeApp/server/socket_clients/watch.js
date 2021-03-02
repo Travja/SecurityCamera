@@ -34,18 +34,6 @@ socket.on("offer", (id, description) => {
             socket.emit("answer", id, peerConnection.localDescription);
         });
     peerConnection.ontrack = event => {
-        // console.log("Track Event" + event);
-
-        // for (let i = 0; i < event.streams.length; i++) {
-        //     console.log("I::" + i);
-        //     console.log(event.streams[i]);
-        // }
-        // let new_stream = new MediaStream()
-        // let video_track_from_stream = event.streams[0].getTracks()[0];
-        // let audio_track_from_stream = event.streams[0].getTracks()[1];
-        // new_stream.addTrack(video_track_from_stream)
-        // new_stream.addTrack(audio_track_from_stream)
-        //video.srcObject = new_stream;
         video.srcObject = event.streams[0];
     };
     peerConnection.onicecandidate = event => {
