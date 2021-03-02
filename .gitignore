@@ -1,11 +1,11 @@
 .idea/
-*/target/
-*/*.iml
-*/*.zip
-*/dependency-reduced-pom.xml
-*/node_modules/
+**/target/
+**/*.iml
+**/*.zip
+**/dependency-reduced-pom.xml
+**/node_modules/
 JavaApp/lib/
-*/package-lock.json
+**/package-lock.json
 *.mp4
 NodeApp/build
 server.conf
