@@ -1,6 +1,7 @@
 import pkg from "dobject-routing";
 import CameraRoutes from "../routes/camera-routes.js";
 import AccountRoutes from "../routes/account-routes.js";
+import NofificationRoutes from "../routes/notification-controller.js";
 
 const { ERequestType } = pkg;
 
@@ -29,16 +30,16 @@ const general_routes = {
           res.send("Hello");
         },
       ],
-      routes: [...CameraRoutes, ...AccountRoutes],
+      routes: [...CameraRoutes, ...AccountRoutes, ...NofificationRoutes],
     },
     {
-        url: '/upload-recording',
-        method: ERequestType.POST,
-        handlers: [
-            async (req, res) => {
-                res.send(200);
-            }
-        ]
+      url: "/upload-recording",
+      method: ERequestType.POST,
+      handlers: [
+        async (req, res) => {
+          res.send(200);
+        },
+      ],
     },
   ],
   routers: [],
