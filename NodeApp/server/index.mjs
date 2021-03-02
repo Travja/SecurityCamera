@@ -9,7 +9,6 @@ import multer from "multer";
 import {Server} from "socket.io";
 //Engine IO initialize
 import httpServer from "http";
-// import SQLConfig from "./configurations/SQLConfig.js";
 import buildRouting from "dobject-routing";
 import general_routes from "./routes/general-routes.js";
 import SQLConfig from "./configurations/SQLConfig.js";
@@ -37,7 +36,6 @@ app.get("/broadcast", (req, res) => res.sendFile(path.join(__dirname, "socket_cl
 app.get("/watcher", (req, res) => res.sendFile(path.join(__dirname, "socket_clients/index.html")));
 app.get("/watch.js", (req, res) => res.sendFile(path.join(__dirname, "socket_clients/watch.js")));
 app.get("/broadcast.js", (req, res) => res.sendFile(path.join(__dirname, "socket_clients/broadcast.js")));
-app.get("/engine.io.js", (req, res) => res.sendFile(path.join(__dirname, "socket_clients/engine.io.js")));
 app.get("/socket.io.js", (req, res) => res.sendFile(path.join(__dirname, "socket_clients/socket.io.js")));
 // client setup and routing
 if (NODE_ENV === "production") {
@@ -80,4 +78,3 @@ io.sockets.on("connection", socket => {
 
 // start to listen
 http.listen(PORT, () => console.log(`Listening on port: ${PORT}`));
-// http.listen(5000, () => console.log("Websocket server listening on port: 5000"));
