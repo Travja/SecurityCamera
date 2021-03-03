@@ -1,8 +1,6 @@
 package cameraguys.project.socketio;
 
 import cameraguys.project.ClientWindow;
-import dev.onvoid.webrtc.media.video.I420Buffer;
-import dev.onvoid.webrtc.media.video.VideoFrame;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 
@@ -12,6 +10,7 @@ import java.nio.ByteBuffer;
 
 public class FrameConverter {
 
+/*
     private static boolean started = false;
     private static boolean processing = false;
 
@@ -111,12 +110,14 @@ public class FrameConverter {
 //        }
     }
 
-    /**
+    */
+/**
      * Converts a given Image into a BufferedImage
      *
      * @param img The Image to be converted
      * @return The converted BufferedImage
-     */
+     *//*
+
     public static BufferedImage toBufferedImage(Image img) {
         // Create a buffered image with transparency
         BufferedImage bimage = new BufferedImage(img.getWidth(null), img.getHeight(null), BufferedImage.TYPE_INT_ARGB);
@@ -164,5 +165,6 @@ public class FrameConverter {
         else if (val < min) return (byte) min;
         else return (byte) max;
     }
+*/
 
 }
