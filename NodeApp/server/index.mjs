@@ -116,13 +116,14 @@ io.on("connection", socket => {
         }
     });
 
-    socket.on("frame", (frame) => {
+    socket.on("frame", (frame, timestamp) => {
         // if (!socket.peers) return;
         // socket.peers.forEach(id => {
         //TODO change this back.
+        console.log("delay to server: " + (new Date().getMilliseconds() - timestamp));
         sockets.forEach(sock => {
             // let sock = getSocket(id);
-            sock.emit("frame", frame);
+            sock.emit("frame", frame, timestamp);
         });
     });
 
