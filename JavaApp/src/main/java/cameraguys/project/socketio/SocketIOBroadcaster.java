@@ -68,7 +68,6 @@ public class SocketIOBroadcaster {
 
         if (SocketIO.getSocket() != null) {
             SocketIO.getSocket().disconnect();
-            SocketIO.getSocket().close();
         }
     }
 }

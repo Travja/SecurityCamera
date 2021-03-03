@@ -1,12 +1,12 @@
 package cameraguys.project.socketio;
 
+import cameraguys.project.http.ConnectionInformation;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter.Listener;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.util.Arrays;
-import java.util.UUID;
 
 public class SocketIO {
 
@@ -17,11 +17,11 @@ public class SocketIO {
     public static Socket socket;
 
     public static Listener onConnect = objects -> {
+        ConnectionInformation connInfo = ConnectionInformation.load();
         //TODO Set the id of the camera
         // send it's owner with the socket emitter.
         System.out.println("Established connection to Socket.");
-        socket.emit("id", UUID.randomUUID().toString());
-//        socket.emit("broadcaster");
+        socket.emit("broadcaster", connInfo.getEmail());
     };
 
     public static Listener disconnect = objects -> System.out.println(Arrays.toString(objects));
