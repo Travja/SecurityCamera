@@ -61,6 +61,7 @@ public class ClientWindow {
     private ScheduledExecutorService timer;
     //    private static HttpStreamServer httpStreamService;
     private int stage = 0;
+    private int iteration = -1;
 
     public ClientWindow() {
         inst = this;
@@ -196,9 +197,9 @@ public class ClientWindow {
         if (((int) slider.getValue()) == 4) displayFrame.copyTo(processingFrame);
 
         MatOfByte buffer = new MatOfByte();
-        Imgcodecs.imencode(".png", displayFrame, buffer);
+        Imgcodecs.imencode(".jpg", displayFrame, buffer);
         MatOfByte buf2 = new MatOfByte();
-        Imgcodecs.imencode(".png", processingFrame, buf2);
+        Imgcodecs.imencode(".jpg", processingFrame, buf2);
 
         if (motionDetected) {
             //If it's been at least 3 seconds since the last motion and there hasn't been sustained motion, scrap the recording.
@@ -227,9 +228,11 @@ public class ClientWindow {
         }
 
 //        httpStreamService.imag = displayFrame;
-        String b64 = "data:image/;base64," + Base64.encodeToString(buffer.toArray(), Base64.NO_WRAP);
+        if (iteration++ % 30 == 0) {
+            String b64 = "data:image/jpeg;base64," + Base64.encodeToString(buffer.toArray(), Base64.NO_WRAP);
 //        System.out.println(b64);
-        socketio.sendFrame(b64);
+            socketio.sendFrame(b64);
+        }
 
         ByteArrayInputStream bin = new ByteArrayInputStream(buffer.toArray());
         ByteArrayInputStream bin2 = new ByteArrayInputStream(buf2.toArray());

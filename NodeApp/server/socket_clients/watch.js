@@ -30,6 +30,7 @@ socket.on("peers", (peers) => {
 });
 
 socket.on("frame", (frame) => {
+    console.log("Got frame");
     video.src = frame;
 });
 

@@ -71,8 +71,8 @@ io.on("connection", socket => {
     sockets.push(socket);
 
     socket.onAny((name, ...args) => {
-        if (name != "frame")
-            console.log("Got " + name + " event");
+        // if (name != "frame")
+        console.log("Got " + name + " event");
     });
 
     socket.on("broadcaster", (email) => {
