@@ -77,6 +77,7 @@ public class SocketIOBroadcaster {
      * @param frame
      */
     public void sendFrame(String frame) {
+        System.out.println("Pushing frame");
         SocketIO.getSocket().emit("frame", frame, System.currentTimeMillis());
     }
 }
