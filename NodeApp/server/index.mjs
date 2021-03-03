@@ -83,10 +83,12 @@ io.on("connection", socket => {
 
         socketEmails[socket.id] = email;
 
-        watchers[email].forEach(id => {
-            let sock = getSocket(id);
-            sock.emit("peers", broadcasters[email]);
-        });
+        if(watchers[email]) {
+            watchers[email].forEach(id => {
+                let sock = getSocket(id);
+                sock.emit("peers", broadcasters[email]);
+            });
+        }
     });
 
     socket.on("watcher", (email) => {
