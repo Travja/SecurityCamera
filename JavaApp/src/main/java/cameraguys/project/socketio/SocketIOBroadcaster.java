@@ -70,5 +70,14 @@ public class SocketIOBroadcaster {
             SocketIO.getSocket().disconnect();
         }
     }
+
+    /**
+     * Sends the raw binary data of an image as a string.
+     *
+     * @param frame
+     */
+    public void sendFrame(String frame) {
+        SocketIO.getSocket().emit("frame", frame);
+    }
 }
 

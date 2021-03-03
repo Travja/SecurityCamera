@@ -45,26 +45,97 @@ if (NODE_ENV === "production") {
     });
 }
 
-let broadcaster;
+let broadcasters = {};
+let watchers = {};
+let sockets = [];
+let socketEmails = {};
+
+const getEmail = (socket_id) => {
+    return socketEmails[socket_id];
+};
+
+const getSocket = (socket_id) => {
+    for (let socket of sockets) {
+        if (socket.id == socket_id) {
+            return socket;
+        }
+    }
+    return null;
+};
+
 const http = httpServer.createServer(app);
 const io = new Server(http);
 io.on("error", e => console.log(e));
 io.on("connection", socket => {
-    console.log("New connection")
+    console.log("New connection");
+    sockets.push(socket);
 
     socket.onAny((name, ...args) => {
         console.log("Got " + name + " event");
     });
 
     socket.on("broadcaster", (email) => {
-        broadcaster = socket.id;
         console.log("Got broadcaster");
-        console.log(broadcaster);
-        console.log("Email: " + email)
-        socket.broadcast.emit("broadcaster");
+        console.log(socket.id);
+        console.log("Email: " + email);
+        if (broadcasters[email])
+            broadcasters[email].push(socket.id);
+
+        socketEmails[socket.id] = email;
+
+        watchers[email].forEach(id => {
+            let sock = getSocket(id);
+            sock.emit("peers", broadcasters[email]);
+        });
     });
+
+    socket.on("watcher", (email) => {
+        socketEmails[socket.id] = email;
+        if (watchers[email])
+            watchers[email].push(socket.id);
+        socket.emit("peers", broadcasters[email]);
+    });
+
+    socket.on("connectionRequest", (socket_id) => {
+        let broadcaster = getSocket(socket_id);
+        if (!broadcaster) return;
+
+        if (!broadcaster.peers)
+            broadcaster.peers = [];
+        broadcaster.peers.push(socket.id);
+
+        //Filter so we only have one outbound request to the socket at a time.
+        for (let bc in broadcasters) {
+            for (let caster of broadcasters[bc]) {
+                if (caster.peers)
+                    caster.peers = caster.peers.filter(peer => peer != socket.id);
+            }
+        }
+    });
+
+    socket.on("frame", (frame) => {
+        // if (!socket.peers) return;
+        // socket.peers.forEach(id => {
+        //TODO change this back.
+        sockets.forEach(sock => {
+            // let sock = getSocket(id);
+            sock.emit("frame", frame);
+        });
+    });
+
     socket.on("disconnect", () => {
-        socket.to(broadcaster).emit("disconnectPeer", socket.id);
+        let email = getEmail(socket.id);
+
+        if (email && broadcasters[email])
+            broadcasters[email] = broadcasters[email].filter(sock => sock != socket.id);
+
+        if (email && watchers[email])
+            watchers[email] = watchers[email].filter(sock => sock != socket.id);
+
+
+        sockets = sockets.filter(sock => sock != socket);
+        delete socketEmails[socket.id];
+        console.log("Removed socket " + socket.id + " from memory");
     });
 });
 

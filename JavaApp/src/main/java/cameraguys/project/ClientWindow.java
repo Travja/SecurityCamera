@@ -3,6 +3,7 @@ package cameraguys.project;
 import cameraguys.project.http.ConnectionInformation;
 import cameraguys.project.http.HttpFileUpload;
 import cameraguys.project.socketio.SocketIOBroadcaster;
+import io.socket.engineio.parser.Base64;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -226,10 +227,15 @@ public class ClientWindow {
         }
 
 //        httpStreamService.imag = displayFrame;
+        String b64 = "data:image/;base64," + Base64.encodeToString(buffer.toArray(), Base64.NO_WRAP);
+        System.out.println(b64);
+        socketio.sendFrame(b64);
+
         ByteArrayInputStream bin = new ByteArrayInputStream(buffer.toArray());
         ByteArrayInputStream bin2 = new ByteArrayInputStream(buf2.toArray());
         Image img1 = new Image(bin);
         Image img2 = new Image(bin2);
+
         currentFrame.setImage(img1);
         filters.setImage(img2);
         initialFrame.copyTo(diffFrame); //Update diffFrame
