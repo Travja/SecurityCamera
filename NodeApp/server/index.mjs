@@ -120,7 +120,7 @@ io.on("connection", socket => {
         // if (!socket.peers) return;
         // socket.peers.forEach(id => {
         //TODO change this back.
-        console.log("delay to server: " + (new Date().getMilliseconds() - timestamp));
+        console.log("delay to server: " + (Date.now().getMilliseconds() - timestamp));
         sockets.forEach(sock => {
             // let sock = getSocket(id);
             sock.emit("frame", frame, timestamp);

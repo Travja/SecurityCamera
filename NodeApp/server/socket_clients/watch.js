@@ -30,7 +30,7 @@ socket.on("peers", (peers) => {
 });
 
 socket.on("frame", (frame, timestamp) => {
-    console.log("Got frame. Total delay to client: " + (new Date().getMilliseconds() - timestamp));
+    console.log("Got frame. Total delay to client: " + (Date.now().getMilliseconds() - timestamp));
     video.src = frame;
 });
 
