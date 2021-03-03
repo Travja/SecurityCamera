@@ -14,11 +14,15 @@ const config = {
 
 const socket = io.connect(window.location.origin);
 const video = document.getElementById("frame");
-const enableAudioButton = document.querySelector("#enable-audio");
+// const enableAudioButton = document.querySelector("#enable-audio");
 
-enableAudioButton.addEventListener("click", enableAudio)
+// enableAudioButton.addEventListener("click", enableAudio)
 
 // socket.emit("watcher", );
+
+socket.on("connect", () => {
+    console.log("Established socket connection");
+});
 
 socket.on("peers", (peers) => {
     //TODO Offer the user which peer to connect to
@@ -26,7 +30,6 @@ socket.on("peers", (peers) => {
 });
 
 socket.on("frame", (frame) => {
-    //TODO Load img binary in frame
     video.src = frame;
 });
 

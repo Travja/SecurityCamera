@@ -71,7 +71,8 @@ io.on("connection", socket => {
     sockets.push(socket);
 
     socket.onAny((name, ...args) => {
-        console.log("Got " + name + " event");
+        if (name != "frame")
+            console.log("Got " + name + " event");
     });
 
     socket.on("broadcaster", (email) => {
@@ -83,7 +84,7 @@ io.on("connection", socket => {
 
         socketEmails[socket.id] = email;
 
-        if(watchers[email]) {
+        if (watchers[email]) {
             watchers[email].forEach(id => {
                 let sock = getSocket(id);
                 sock.emit("peers", broadcasters[email]);

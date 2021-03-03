@@ -228,7 +228,7 @@ public class ClientWindow {
 
 //        httpStreamService.imag = displayFrame;
         String b64 = "data:image/;base64," + Base64.encodeToString(buffer.toArray(), Base64.NO_WRAP);
-        System.out.println(b64);
+//        System.out.println(b64);
         socketio.sendFrame(b64);
 
         ByteArrayInputStream bin = new ByteArrayInputStream(buffer.toArray());
@@ -238,6 +238,7 @@ public class ClientWindow {
 
         currentFrame.setImage(img1);
         filters.setImage(img2);
+
         initialFrame.copyTo(diffFrame); //Update diffFrame
         try {
             bin.close();
