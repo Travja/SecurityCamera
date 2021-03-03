@@ -47,25 +47,25 @@ if (NODE_ENV === "production") {
 
 let broadcaster;
 const http = httpServer.createServer(app);
-const socket = new Server(http);
-socket.onAny((name, ...args) => {
-    console.log("Got " + name + " event");
-});
-
-socket.on("error", e => console.log(e));
-socket.on("connection", socket => {
+const io = new Server(http);
+io.on("error", e => console.log(e));
+io.on("connection", socket => {
     console.log("New connection")
-});
 
-socket.on("broadcaster", (email) => {
-    broadcaster = socket.id;
-    console.log("Got broadcaster");
-    console.log(broadcaster);
-    console.log("Email: " + email)
-    socket.broadcast.emit("broadcaster");
-});
-socket.on("disconnect", () => {
-    socket.to(broadcaster).emit("disconnectPeer", socket.id);
+    socket.onAny((name, ...args) => {
+        console.log("Got " + name + " event");
+    });
+
+    socket.on("broadcaster", (email) => {
+        broadcaster = socket.id;
+        console.log("Got broadcaster");
+        console.log(broadcaster);
+        console.log("Email: " + email)
+        socket.broadcast.emit("broadcaster");
+    });
+    socket.on("disconnect", () => {
+        socket.to(broadcaster).emit("disconnectPeer", socket.id);
+    });
 });
 
 // start to listen
