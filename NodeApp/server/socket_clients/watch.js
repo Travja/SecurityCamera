@@ -29,10 +29,12 @@ socket.on("peers", (peers) => {
 
 });
 
-socket.on("frame", (frame, timestamp) => {
+const handleFunction = (frame, timestamp) => {
     console.log("Got frame. Total delay to client: " + (Date.now() - timestamp));
     video.src = frame;
-});
+};
+
+socket.on("frame", handleFunction);
 
 // socket.on("offer", (id, description) => {
 //     peerConnection = new RTCPeerConnection(config);
