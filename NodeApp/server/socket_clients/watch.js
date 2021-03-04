@@ -17,7 +17,7 @@ const video = document.getElementById("frame");
 let canvas = document.getElementById("canv");
 let ctx = canvas.getContext("2d");
 let image = new Image();
-image.onload = function() {
+image.onload = function () {
     ctx.drawImage(image, 0, 0);
 };
 // const enableAudioButton = document.querySelector("#enable-audio");
@@ -35,10 +35,10 @@ socket.on("peers", (peers) => {
 
 });
 
-const handleFunction = (frame, timestamp) => {
+const handleFunction = async (frame, timestamp) => {
     console.log("Got frame. Total delay to client: " + (Date.now() - timestamp));
-    image.src = frame;
-        // video.src = frame;
+    // image.src = frame;
+    await video.src = frame;
 };
 
 socket.on("frame", handleFunction);
