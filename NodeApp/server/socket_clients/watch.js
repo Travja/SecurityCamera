@@ -38,7 +38,7 @@ socket.on("peers", (peers) => {
 const handleFunction = async (frame, timestamp) => {
     console.log("Got frame. Total delay to client: " + (Date.now() - timestamp));
     // image.src = frame;
-    await video.src = frame;
+    video.src = frame;
 };
 
 socket.on("frame", handleFunction);
