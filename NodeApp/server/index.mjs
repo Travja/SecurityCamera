@@ -40,7 +40,7 @@ const boundary = "gc0p4Jq0M2Yt08jU534c0p";
 // Otherwise res will close early
 // The implementation of the readable stream, please refer to: https://nodejs.org/api/stream.html#stream_implementing_a_readable_stream
 let img = "";
-let fps = 10;
+let fps = 5;
 class MockStream extends Readable {
     constructor(opts) {
         super(opts)
