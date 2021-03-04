@@ -14,12 +14,12 @@ const config = {
 
 const socket = io.connect(window.location.origin);
 const video = document.getElementById("frame");
-let canvas = document.getElementById("canv");
-let ctx = canvas.getContext("2d");
-let image = new Image();
-image.onload = function () {
-    ctx.drawImage(image, 0, 0);
-};
+// let canvas = document.getElementById("canv");
+// let ctx = canvas.getContext("2d");
+// let image = new Image();
+// image.onload = function () {
+//     ctx.drawImage(image, 0, 0);
+// };
 // const enableAudioButton = document.querySelector("#enable-audio");
 
 // enableAudioButton.addEventListener("click", enableAudio)
