@@ -33,20 +33,6 @@ app.use('/api', buildRouting.default([general_routes]));
 new SQLConfig();
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-app.get("/broadcast", (req, res) => res.sendFile(path.join(__dirname, "socket_clients/broadcast.html")));
-app.get("/watcher", (req, res) => res.sendFile(path.join(__dirname, "socket_clients/index.html")));
-app.get("/watch.js", (req, res) => res.sendFile(path.join(__dirname, "socket_clients/watch.js")));
-app.get("/broadcast.js", (req, res) => res.sendFile(path.join(__dirname, "socket_clients/broadcast.js")));
-app.get("/socket.io.js", (req, res) => res.sendFile(path.join(__dirname, "socket_clients/socket.io.js")));
-// client setup and routing
-if (NODE_ENV === "production") {
-    app.use(express.static("build/client"));
-    app.get("*", (req, res) => {
-        return res.sendFile(path.join(__dirname, "client/index.html"));
-    });
-}
-
-
 
 const boundary = "gc0p4Jq0M2Yt08jU534c0p";
 
@@ -78,6 +64,19 @@ app.get("/test", (req, res) => {
     const stream = new MockStream();
     stream.pipe(res);
 });
+
+app.get("/broadcast", (req, res) => res.sendFile(path.join(__dirname, "socket_clients/broadcast.html")));
+app.get("/watcher", (req, res) => res.sendFile(path.join(__dirname, "socket_clients/index.html")));
+app.get("/watch.js", (req, res) => res.sendFile(path.join(__dirname, "socket_clients/watch.js")));
+app.get("/broadcast.js", (req, res) => res.sendFile(path.join(__dirname, "socket_clients/broadcast.js")));
+app.get("/socket.io.js", (req, res) => res.sendFile(path.join(__dirname, "socket_clients/socket.io.js")));
+// client setup and routing
+if (NODE_ENV === "production") {
+    app.use(express.static("build/client"));
+    app.get("*", (req, res) => {
+        return res.sendFile(path.join(__dirname, "client/index.html"));
+    });
+}
 
 
 let broadcasters = {};
