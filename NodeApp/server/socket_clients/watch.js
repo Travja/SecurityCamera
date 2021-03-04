@@ -14,6 +14,12 @@ const config = {
 
 const socket = io.connect(window.location.origin);
 const video = document.getElementById("frame");
+var canvas = document.getElementById("c");
+var ctx = canvas.getContext("2d");
+var image = new Image();
+image.onload = function() {
+    ctx.drawImage(image, 0, 0);
+};
 // const enableAudioButton = document.querySelector("#enable-audio");
 
 // enableAudioButton.addEventListener("click", enableAudio)
@@ -31,7 +37,8 @@ socket.on("peers", (peers) => {
 
 const handleFunction = (frame, timestamp) => {
     console.log("Got frame. Total delay to client: " + (Date.now() - timestamp));
-    video.src = frame;
+    image.src = frame;
+        // video.src = frame;
 };
 
 socket.on("frame", handleFunction);

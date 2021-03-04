@@ -228,7 +228,7 @@ public class ClientWindow {
         }
 
 //        httpStreamService.imag = displayFrame;
-        if (iteration++ % 4 == 0) {
+        if (iteration++ % 1 == 0) {
             String b64 = "data:image/jpeg;base64," + Base64.encodeToString(buffer.toArray(), Base64.NO_WRAP);
 //        System.out.println(b64);
             socketio.sendFrame(b64);
