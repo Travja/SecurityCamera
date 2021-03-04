@@ -14,6 +14,7 @@ const config = {
 
 const socket = io.connect(window.location.origin);
 const video = document.getElementById("frame");
+const peersElm = document.getElementById("peers");
 // let canvas = document.getElementById("canv");
 // let ctx = canvas.getContext("2d");
 // let image = new Image();
@@ -28,20 +29,39 @@ const video = document.getElementById("frame");
 
 socket.on("connect", () => {
     console.log("Established socket connection");
+    socket.emit("watcher", "asdf");
 });
 
 socket.on("peers", (peers) => {
     //TODO Offer the user which peer to connect to
+    console.log("Peers:", peers);
+    if (peers) {
+        for (let i = peersElm.options.length - 1; i >= 0; i--) {
+            peersElm.remove(i);
+        }
 
+        peersElm.add(document.createElement("option"));
+        peers.forEach(peer => {
+            let option = document.createElement("option");
+            option.text = peer;
+            peersElm.add(option);
+        });
+    }
 });
 
-const handleFunction = async (frame, timestamp) => {
-    console.log("Got frame. Total delay to client: " + (Date.now() - timestamp));
-    // image.src = frame;
-    video.src = frame;
-};
+peersElm.addEventListener("change", evt => {
+    let selected = peersElm.options[peersElm.selectedIndex];
+    video.src = "/test/" + selected.text;
+    // socket.emit("connectionRequest", selected.text);
+});
 
-socket.on("frame", handleFunction);
+// const handleFunction = async (frame, timestamp) => {
+//     console.log("Got frame. Total delay to client: " + (Date.now() - timestamp));
+//     // image.src = frame;
+//     video.src = frame;
+// };
+//
+// socket.on("frame", handleFunction);
 
 // socket.on("offer", (id, description) => {
 //     peerConnection = new RTCPeerConnection(config);

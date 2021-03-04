@@ -12,7 +12,7 @@ import httpServer from "http";
 import buildRouting from "dobject-routing";
 import general_routes from "./routes/general-routes.js";
 import SQLConfig from "./configurations/SQLConfig.js";
-import { Readable} from "stream";
+import {Readable} from "stream";
 
 // gather required frameworks and configurations
 const app = express();
@@ -36,20 +36,20 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const boundary = "gc0p4Jq0M2Yt08jU534c0p";
 
-// must be implemented using a stream
-// Otherwise res will close early
-// The implementation of the readable stream, please refer to: https://nodejs.org/api/stream.html#stream_implementing_a_readable_stream
-let img = "";
+let streams = {};
 let fps = 5;
+
 class MockStream extends Readable {
     constructor(opts) {
-        super(opts)
+        super(opts);
+        this.socket = opts.socket;
     }
+
     async _read(number) {
         const buffer = Buffer.concat([
-            new Buffer(`--${boundary}\r\n`),
-            new Buffer("Content-Type: image/jpeg\r\n\r\n"),
-            new Buffer(img, 'base64')
+            Buffer.from(`--${boundary}\r\n`),
+            Buffer.from("Content-Type: image/jpeg\r\n\r\n"),
+            Buffer.from(streams[this.socket], 'base64')
         ]);
         setTimeout(() => {
             this.push(buffer);
@@ -57,18 +57,19 @@ class MockStream extends Readable {
     }
 }
 
-app.get("/test", (req, res) => {
+app.get("/test/:socket", (req, res) => {
+    let socket = req.params.socket;
     res.writeHead(200, {
         "Content-Type": `multipart/x-mixed-replace; boundary="${boundary}"`
     });
-    const stream = new MockStream();
+    const stream = new MockStream({socket});
     stream.pipe(res);
 });
 
-app.get("/broadcast", (req, res) => res.sendFile(path.join(__dirname, "socket_clients/broadcast.html")));
+// app.get("/broadcast", (req, res) => res.sendFile(path.join(__dirname, "socket_clients/broadcast.html")));
 app.get("/watcher", (req, res) => res.sendFile(path.join(__dirname, "socket_clients/index.html")));
 app.get("/watch.js", (req, res) => res.sendFile(path.join(__dirname, "socket_clients/watch.js")));
-app.get("/broadcast.js", (req, res) => res.sendFile(path.join(__dirname, "socket_clients/broadcast.js")));
+// app.get("/broadcast.js", (req, res) => res.sendFile(path.join(__dirname, "socket_clients/broadcast.js")));
 app.get("/socket.io.js", (req, res) => res.sendFile(path.join(__dirname, "socket_clients/socket.io.js")));
 // client setup and routing
 if (NODE_ENV === "production") {
@@ -105,16 +106,17 @@ io.on("connection", socket => {
     sockets.push(socket);
 
     socket.onAny((name, ...args) => {
-        // if (name != "frame")
-        console.log("Got " + name + " event");
+        if (name != "frame")
+            console.log("Got " + name + " event");
     });
 
     socket.on("broadcaster", (email) => {
         console.log("Got broadcaster");
         console.log(socket.id);
         console.log("Email: " + email);
-        if (broadcasters[email])
-            broadcasters[email].push(socket.id);
+        if (!broadcasters[email])
+            broadcasters[email] = [];
+        broadcasters[email].push(socket.id);
 
         socketEmails[socket.id] = email;
 
@@ -128,8 +130,11 @@ io.on("connection", socket => {
 
     socket.on("watcher", (email) => {
         socketEmails[socket.id] = email;
-        if (watchers[email])
-            watchers[email].push(socket.id);
+        console.log("Email is: " + email);
+        if (!watchers[email])
+            watchers[email] = [];
+        watchers[email].push(socket.id);
+        console.log(JSON.stringify(broadcasters[email]));
         socket.emit("peers", broadcasters[email]);
     });
 
@@ -154,12 +159,13 @@ io.on("connection", socket => {
         // if (!socket.peers) return;
         // socket.peers.forEach(id => {
         //TODO change this back.
-        console.log("delay to server: " + (Date.now() - timestamp));
-        sockets.forEach(sock => {
-            // let sock = getSocket(id);
-            img = frame;
-            sock.emit("frame", frame, timestamp);
-        });
+        // console.log("delay to server: " + (Date.now() - timestamp));
+        streams[socket.id] = frame;
+        // sockets.forEach(sock => {
+        // let sock = getSocket(id);
+        // img = frame;
+        // sock.emit("frame", frame, timestamp);
+        // });
     });
 
     socket.on("disconnect", () => {
