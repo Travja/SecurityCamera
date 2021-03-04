@@ -12,6 +12,7 @@ import httpServer from "http";
 import buildRouting from "dobject-routing";
 import general_routes from "./routes/general-routes.js";
 import SQLConfig from "./configurations/SQLConfig.js";
+import { Readable} from "stream";
 
 // gather required frameworks and configurations
 const app = express();
@@ -44,6 +45,40 @@ if (NODE_ENV === "production") {
         return res.sendFile(path.join(__dirname, "client/index.html"));
     });
 }
+
+
+
+const boundary = "gc0p4Jq0M2Yt08jU534c0p";
+
+// must be implemented using a stream
+// Otherwise res will close early
+// The implementation of the readable stream, please refer to: https://nodejs.org/api/stream.html#stream_implementing_a_readable_stream
+let img = "";
+let fps = 10;
+class MockStream extends Readable {
+    constructor(opts) {
+        super(opts)
+    }
+    async _read(number) {
+        const buffer = Buffer.concat([
+            new Buffer(`--${boundary}\r\n`),
+            new Buffer("Content-Type: image/jpeg\r\n\r\n"),
+            new Buffer(img, 'base64')
+        ]);
+        setTimeout(() => {
+            this.push(buffer);
+        }, 1000 / fps);
+    }
+}
+
+app.get("/test", (req, res) => {
+    res.writeHead(200, {
+        "Content-Type": `multipart/x-mixed-replace; boundary="${boundary}"`
+    });
+    const stream = new MockStream();
+    stream.pipe(res);
+});
+
 
 let broadcasters = {};
 let watchers = {};
@@ -123,6 +158,7 @@ io.on("connection", socket => {
         console.log("delay to server: " + (Date.now() - timestamp));
         sockets.forEach(sock => {
             // let sock = getSocket(id);
+            img = frame;
             sock.emit("frame", frame, timestamp);
         });
     });
