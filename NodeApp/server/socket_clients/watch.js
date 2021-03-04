@@ -14,9 +14,9 @@ const config = {
 
 const socket = io.connect(window.location.origin);
 const video = document.getElementById("frame");
-var canvas = document.getElementById("c");
-var ctx = canvas.getContext("2d");
-var image = new Image();
+let canvas = document.getElementById("canv");
+let ctx = canvas.getContext("2d");
+let image = new Image();
 image.onload = function() {
     ctx.drawImage(image, 0, 0);
 };
