@@ -2,112 +2,69 @@ let peerConnection;
 const config = {
     iceServers: [
         {
-            "urls": "stun:stun.l.google.com:19302",
+            urls: process.env.STUN_URL
         },
-        // {
-        //   "urls": "turn:TURN_IP?transport=tcp",
-        //   "username": "TURN_USERNAME",
-        //   "credential": "TURN_CREDENTIALS"
-        // }
+        {
+            url: process.env.TURN_URL,
+            username: process.env.TURN_USERNAME,
+            credential: process.env.TURN_CREDENTIAL
+        }
     ]
 };
 
-const socket = io.connect(window.location.origin);
-const video = document.getElementById("frame");
-const peersElm = document.getElementById("peers");
-// let canvas = document.getElementById("canv");
-// let ctx = canvas.getContext("2d");
-// let image = new Image();
-// image.onload = function () {
-//     ctx.drawImage(image, 0, 0);
-// };
-// const enableAudioButton = document.querySelector("#enable-audio");
+const socket = io.connect();
+const video = document.querySelector("video");
+const enableAudioButton = document.querySelector("#enable-audio");
 
-// enableAudioButton.addEventListener("click", enableAudio)
+console.log("URI WINDOW: " + window.location.origin)
 
-// socket.emit("watcher", );
+enableAudioButton.addEventListener("click", enableAudio)
+
+socket.on("offer", (id, description) => {
+    peerConnection = new RTCPeerConnection(config);
+    try {
+        description = JSON.parse(description);
+    } catch (e) {
+        console.log("Supplied description is already a json object");
+    }
+    console.log(description);
+    peerConnection
+        .setRemoteDescription(description)
+        .then(() => peerConnection.createAnswer())
+        .then(sdp => peerConnection.setLocalDescription(sdp))
+        .then(() => {
+            socket.emit("answer", id, peerConnection.localDescription);
+        });
+    peerConnection.ontrack = event => {
+        video.srcObject = event.streams[0];
+    };
+    peerConnection.onicecandidate = event => {
+        if (event.candidate) {
+            socket.emit("candidate", id, event.candidate);
+        }
+    };
+});
+
+
+socket.on("candidate", (id, candidate) => {
+    try {
+        candidate = JSON.parse(candidate);
+    } catch (e) {
+        console.log("Supplied candidate is already a json object");
+    }
+    console.log(candidate);
+    peerConnection
+        .addIceCandidate(new RTCIceCandidate(candidate))
+        .catch(e => console.error(e));
+});
 
 socket.on("connect", () => {
-    console.log("Established socket connection");
-    socket.emit("watcher", "asdf");
+    socket.emit("watcher");
 });
 
-socket.on("peers", (peers) => {
-    //TODO Offer the user which peer to connect to
-    console.log("Peers:", peers);
-    if (peers) {
-        for (let i = peersElm.options.length - 1; i >= 0; i--) {
-            peersElm.remove(i);
-        }
-
-        peersElm.add(document.createElement("option"));
-        peers.forEach(peer => {
-            let option = document.createElement("option");
-            option.text = peer;
-            peersElm.add(option);
-        });
-    }
+socket.on("broadcaster", () => {
+    socket.emit("watcher");
 });
-
-peersElm.addEventListener("change", evt => {
-    let selected = peersElm.options[peersElm.selectedIndex];
-    video.src = "/test/" + selected.text;
-    // socket.emit("connectionRequest", selected.text);
-});
-
-// const handleFunction = async (frame, timestamp) => {
-//     console.log("Got frame. Total delay to client: " + (Date.now() - timestamp));
-//     // image.src = frame;
-//     video.src = frame;
-// };
-//
-// socket.on("frame", handleFunction);
-
-// socket.on("offer", (id, description) => {
-//     peerConnection = new RTCPeerConnection(config);
-//     try {
-//         description = JSON.parse(description);
-//     } catch (e) {
-//         console.log("Supplied description is already a json object");
-//     }
-//     console.log(description);
-//     peerConnection
-//         .setRemoteDescription(description)
-//         .then(() => peerConnection.createAnswer())
-//         .then(sdp => peerConnection.setLocalDescription(sdp))
-//         .then(() => {
-//             socket.emit("answer", id, peerConnection.localDescription);
-//         });
-//     peerConnection.ontrack = event => {
-//         video.srcObject = event.streams[0];
-//     };
-//     peerConnection.onicecandidate = event => {
-//         if (event.candidate) {
-//             socket.emit("candidate", id, event.candidate);
-//         }
-//     };
-// });
-//
-//
-// socket.on("candidate", (id, candidate) => {
-//     try {
-//         candidate = JSON.parse(candidate);
-//     } catch (e) {
-//         console.log("Supplied candidate is already a json object");
-//     }
-//     console.log(candidate);
-//     peerConnection
-//         .addIceCandidate(new RTCIceCandidate(candidate))
-//         .catch(e => console.error(e));
-// });
-//
-// socket.on("connect", () => {
-//     socket.emit("watcher");
-// });
-//
-// socket.on("broadcaster", () => {
-//     socket.emit("watcher");
-// });
 
 window.onunload = window.onbeforeunload = () => {
     socket.close();

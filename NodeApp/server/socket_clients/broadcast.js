@@ -2,17 +2,17 @@ const peerConnections = {};
 const config = {
     iceServers: [
         {
-            "urls": "stun:stun.l.google.com:19302",
+            urls: process.env.STUN_URL
         },
-        // {
-        //   "urls": "turn:TURN_IP?transport=tcp",
-        //   "username": "TURN_USERNAME",
-        //   "credential": "TURN_CREDENTIALS"
-        // }
+        {
+            url: process.env.TURN_URL,
+            username: process.env.TURN_USERNAME,
+            credential: process.env.TURN_CREDENTIAL
+        }
     ]
 };
 
-const socket = io.connect(window.location.origin);
+const socket = io.connect();
 
 console.log("URI WINDOW: " + window.location.origin)
 

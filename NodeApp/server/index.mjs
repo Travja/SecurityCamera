@@ -46,43 +46,10 @@ app.use('/api', buildRouting.default([general_routes]));
 new SQLConfig();
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-
-const boundary = "gc0p4Jq0M2Yt08jU534c0p";
-
-let streams = {};
-let fps = 5;
-
-class MockStream extends Readable {
-    constructor(opts) {
-        super(opts);
-        this.socket = opts.socket;
-    }
-
-    async _read(number) {
-        const buffer = Buffer.concat([
-            Buffer.from(`--${boundary}\r\n`),
-            Buffer.from("Content-Type: image/jpeg\r\n\r\n"),
-            Buffer.from(streams[this.socket], 'base64')
-        ]);
-        setTimeout(() => {
-            this.push(buffer);
-        }, 1000 / fps);
-    }
-}
-
-app.get("/test/:socket", (req, res) => {
-    let socket = req.params.socket;
-    res.writeHead(200, {
-        "Content-Type": `multipart/x-mixed-replace; boundary="${boundary}"`
-    });
-    const stream = new MockStream({socket});
-    stream.pipe(res);
-});
-
-// app.get("/broadcast", (req, res) => res.sendFile(path.join(__dirname, "socket_clients/broadcast.html")));
+app.get("/broadcast", (req, res) => res.sendFile(path.join(__dirname, "socket_clients/broadcast.html")));
 app.get("/watcher", (req, res) => res.sendFile(path.join(__dirname, "socket_clients/index.html")));
 app.get("/watch.js", (req, res) => res.sendFile(path.join(__dirname, "socket_clients/watch.js")));
-// app.get("/broadcast.js", (req, res) => res.sendFile(path.join(__dirname, "socket_clients/broadcast.js")));
+app.get("/broadcast.js", (req, res) => res.sendFile(path.join(__dirname, "socket_clients/broadcast.js")));
 app.get("/socket.io.js", (req, res) => res.sendFile(path.join(__dirname, "socket_clients/socket.io.js")));
 app.use("/uploads", express.static('uploads'));
 app.post("/api/account", upload.single('picture'), async (req, res, next) => {
@@ -103,108 +70,34 @@ if (NODE_ENV === "production") {
     });
 }
 
-
-let broadcasters = {};
-let watchers = {};
-let sockets = [];
-let socketEmails = {};
-
-const getEmail = (socket_id) => {
-    return socketEmails[socket_id];
-};
-
-const getSocket = (socket_id) => {
-    for (let socket of sockets) {
-        if (socket.id == socket_id) {
-            return socket;
-        }
-    }
-    return null;
-};
-
+let broadcaster;
 const http = httpServer.createServer(app);
 const io = new Server(http);
-io.on("error", e => console.log(e));
-io.on("connection", socket => {
-    console.log("New connection");
-    sockets.push(socket);
 
-    socket.onAny((name, ...args) => {
-        if (name != "frame")
-            console.log("Got " + name + " event");
-    });
+io.sockets.on("error", e => console.log(e));
+io.sockets.on("connection", socket => {
 
-    socket.on("broadcaster", (email) => {
+    socket.on("broadcaster", () => {
+        broadcaster = socket.id;
         console.log("Got broadcaster");
-        console.log(socket.id);
-        console.log("Email: " + email);
-        if (!broadcasters[email])
-            broadcasters[email] = [];
-        broadcasters[email].push(socket.id);
-
-        socketEmails[socket.id] = email;
-
-        if (watchers[email]) {
-            watchers[email].forEach(id => {
-                let sock = getSocket(id);
-                sock.emit("peers", broadcasters[email]);
-            });
-        }
+        console.log(broadcaster);
+        socket.broadcast.emit("broadcaster");
     });
-
-    socket.on("watcher", (email) => {
-        socketEmails[socket.id] = email;
-        console.log("Email is: " + email);
-        if (!watchers[email])
-            watchers[email] = [];
-        watchers[email].push(socket.id);
-        console.log(JSON.stringify(broadcasters[email]));
-        socket.emit("peers", broadcasters[email]);
+    socket.on("watcher", () => {
+        socket.to(broadcaster).emit("watcher", socket.id);
     });
-
-    socket.on("connectionRequest", (socket_id) => {
-        let broadcaster = getSocket(socket_id);
-        if (!broadcaster) return;
-
-        if (!broadcaster.peers)
-            broadcaster.peers = [];
-        broadcaster.peers.push(socket.id);
-
-        //Filter so we only have one outbound request to the socket at a time.
-        for (let bc in broadcasters) {
-            for (let caster of broadcasters[bc]) {
-                if (caster.peers)
-                    caster.peers = caster.peers.filter(peer => peer != socket.id);
-            }
-        }
+    socket.on("offer", (id, message) => {
+        socket.to(id).emit("offer", socket.id, message);
     });
-
-    socket.on("frame", (frame, timestamp) => {
-        // if (!socket.peers) return;
-        // socket.peers.forEach(id => {
-        //TODO change this back.
-        // console.log("delay to server: " + (Date.now() - timestamp));
-        streams[socket.id] = frame;
-        // sockets.forEach(sock => {
-        // let sock = getSocket(id);
-        // img = frame;
-        // sock.emit("frame", frame, timestamp);
-        // });
+    socket.on("answer", (id, message) => {
+        socket.to(id).emit("answer", socket.id, message);
     });
-
+    socket.on("candidate", (id, message) => {
+        console.log("Got candidate");
+        socket.to(id).emit("candidate", socket.id, message);
+    });
     socket.on("disconnect", () => {
-        let email = getEmail(socket.id);
-
-        if (email && broadcasters[email])
-            broadcasters[email] = broadcasters[email].filter(sock => sock != socket.id);
-
-        if (email && watchers[email])
-            watchers[email] = watchers[email].filter(sock => sock != socket.id);
-
-
-        sockets = sockets.filter(sock => sock != socket);
-        delete socketEmails[socket.id];
-        console.log("Removed socket " + socket.id + " from memory");
+        socket.to(broadcaster).emit("disconnectPeer", socket.id);
     });
 });
 

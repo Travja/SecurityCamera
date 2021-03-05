@@ -2,14 +2,12 @@
 <html>
 <head>
     <title>Viewer</title>
-    <meta charset="UTF-8"/>
-    <!--    <link href="/styles.css" rel="stylesheet" />-->
+    <meta charset="UTF-8" />
+<!--    <link href="/styles.css" rel="stylesheet" />-->
 </head>
 <body>
-<!--<canvas id="canv"/>-->
-<select id="peers"></select>
-<img id="frame" src="/test"/>
-<!--<button id="enable-audio">Enable audio</button>-->
+<video playsinline autoplay muted></video>
+<button id="enable-audio">Enable audio</button>
 <script src="./socket.io.js"></script>
 <script src="./watch.js"></script>
 </body>
