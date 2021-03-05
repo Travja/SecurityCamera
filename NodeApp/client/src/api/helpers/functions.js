@@ -11,7 +11,7 @@ export const handleError = (err, cb) => {
     err.response &&
     (err.response.status === 401 || err.response.status === 403)
   ) {
-    window.location.href = "/";
+    //window.location.href = "/";
   } else {
     cb({ error: err.response ? err.response.data.error : err.message }, null);
   }

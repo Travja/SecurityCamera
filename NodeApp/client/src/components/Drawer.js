@@ -1,7 +1,8 @@
 import React from "react";
 import {NavLink} from "react-router-dom";
 import Icon from "@mdi/react";
-import {mdiCog, mdiFilmstripBoxMultiple, mdiHome, mdiVideoWireless, mdiLogin} from "@mdi/js";
+import {mdiCog, mdiFilmstripBoxMultiple, mdiHome, mdiVideoWireless, mdiLogin, mdiLogout} from "@mdi/js";
+import AccountAPI from "../api/Account";
 
 export const DrawerItem = props => {
     return (
@@ -28,6 +29,13 @@ export default class Drawer extends React.Component {
         document.getElementById("drawer").addEventListener("mouseover", this.mousedOver.bind(this));
         document.getElementById("drawer").addEventListener("mouseout", this.mousedOut.bind(this));
         window.addEventListener("click", this.mouseClicked.bind(this))
+        AccountAPI.getAccount((err, account) => {
+            if(err) console.log("No account");
+            console.log(account);
+            if(account) {
+                this.setState({account: account});
+            }
+        });
     }
 
     mouseClicked(e) {
@@ -63,21 +71,29 @@ export default class Drawer extends React.Component {
             <aside className={this.state.isOpen ? "" : "collapsed"} id="drawer" onClick={this.props?.onClick}>
                 <header>
                     <div>
-                        <img className="profile-picture" src="/profile-test.png"/>
+                        {this.state.account?.picture ? <img className="profile-picture" src={this.state.account.picture}/> : null}
                     </div>
                     <section>
                         <div>
-                            <p className="username">Carter Wilde</p>
-                            <p className="email">carterjwilde@gmail.com</p>
+                            {
+                                this.state.account ? (<>
+                                    {this.state.account.Username ? <p className="username">{this.state.account.username}</p> : null}
+                                    {this.state.account.Email ? <p className="email">{this.state.account.Email}</p>: null}
+                                </>) : null
+                            }
                         </div>
                     </section>
                 </header>
                 <section className="navigation">
-                    <DrawerItem icon={mdiHome} content="Home"/>
-                    <DrawerItem path="/recordings" icon={mdiFilmstripBoxMultiple} content="Recordings"/>
-                    <DrawerItem path="/streams" icon={mdiVideoWireless} content="Streams"/>
-                    <DrawerItem path="/settings" icon={mdiCog} content="Settings"/>
-                    <DrawerItem path="/login" icon={mdiLogin} content="Login"/>
+                    {
+                        this.state.account ? (<>
+                        <DrawerItem icon={mdiHome} content="Home"/>
+                        <DrawerItem path="/recordings" icon={mdiFilmstripBoxMultiple} content="Recordings"/>
+                        <DrawerItem path="/streams" icon={mdiVideoWireless} content="Streams"/>
+                        <DrawerItem path="/settings" icon={mdiCog} content="Settings"/>
+                        </>) : <DrawerItem path="/login" icon={mdiLogin} content="Login"/>
+                    }
+                    
                 </section>
             </aside>
         );
