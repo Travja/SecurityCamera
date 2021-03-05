@@ -35,6 +35,7 @@ public class HttpStreamServer implements Runnable {
 
         InputStream in = new ByteArrayInputStream(bytes);
         BufferedImage img = ImageIO.read(in);
+        mat.free();
 
         return img;
     }
