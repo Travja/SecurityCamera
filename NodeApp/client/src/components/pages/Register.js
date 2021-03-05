@@ -3,7 +3,7 @@ import { connect } from "react-redux";
 import AccountAPI from "../../api/Account";
 import { withStyles } from "@material-ui/core/styles";
 import { Button, Card, CardActions, CardContent, TextField, Typography } from "@material-ui/core"
-import { NavLink } from "react-router-dom";
+import axios from "axios";
 
 const styles = theme => ({
     root: {
@@ -28,42 +28,46 @@ const styles = theme => ({
     },
 });
 
-class Login extends Component {
+class Register extends Component {
     constructor(props) {
         super(props);
         this.state = {
             email: "",
             password: "",
+            name: ""
         };
+        this.register = this.register.bind(this);
     }
 
-    render() {
-        const { classes } = this.props;
-        const { password, email } = this.state;
-
-        const login = (e) => {
-            e.preventDefault();
-            console.log("called", { password, email });
-            AccountAPI.login({ password, email }, (err) => {
+    async register(e) {
+        e.preventDefault();
+        const res = await axios.post("/api/account", {email:this.state.email, password:this.state.password, name:this.state.name});
+        if(res) {
+            AccountAPI.login({password: this.state.password, email: this.state.email}, (err) => {
                 if (err) {
                     console.log("error", err.error);
                 } else {
-                    window.location.href = "/recordings";
+                    window.location.href = "/streams";
                 }
             });
-        };
+        }
+    };
+
+    render() {
+        const { classes } = this.props;
+
         return (
             <div className="Auth">
                 <Card className={classes.root}>
                     <form>
                         <CardContent>
-                            <Typography variant="h5" component="h2">Log in</Typography>
-                            <div><TextField onChange={({ target: { value } }) => this.setState({ email: value })} type="email" label="Email" /></div>
-                            <div><TextField onChange={({ target: { value } }) => this.setState({ password: value })} type="password" label="Password" /></div>
+                            <Typography variant="h5" component="h2">Register</Typography>
+                            <div><TextField onChange={({ target: { value } }) => this.setState({ name: value })} type="text" label="Name"/></div>
+                            <div><TextField onChange={({ target: { value } }) => this.setState({ email: value })} type="email" label="Email" required/></div>
+                            <div><TextField onChange={({ target: { value } }) => this.setState({ password: value })} type="password" label="Password" required/></div>
                         </CardContent>
                         <CardActions>
-                            <Button variant="contained" color="primary" onClick={login}>Login</Button>
-                            <NavLink exact to="/register" style={{textDecoration: "none"}}><Button>Register</Button></NavLink>
+                            <Button variant="contained" color="primary" onClick={this.register}>Register</Button>
                         </CardActions>
                     </form>
                 </Card>
@@ -76,4 +80,4 @@ const mapStateToProps = (state) => ({
     token: state.token,
     refresh_token: state.refresh_token,
 });
-export default connect(mapStateToProps)(withStyles(styles, { withTheme: true })(Login));
+export default connect(mapStateToProps)(withStyles(styles, { withTheme: true })(Register));

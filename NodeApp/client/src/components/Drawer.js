@@ -84,7 +84,7 @@ class Drawer extends React.Component {
                         <div>
                             {
                                 this.state.account ? (<>
-                                    {this.state.account.Username ? <p className="username">{this.state.account.username}</p> : null}
+                                    {this.state.account.Name ? <p className="username">{this.state.account.Name}</p> : null}
                                     {this.state.account.Email ? <p className="email">{this.state.account.Email}</p> : null}
                                 </>) : null
                             }

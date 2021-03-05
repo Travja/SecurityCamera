@@ -16,6 +16,7 @@ const Home = lazy(() => import("./components/pages/Home"));
 const Streams = lazy(() => import("./components/pages/Streams"));
 const Recordings = lazy(() => import("./components/pages/Recordings"));
 const Settings = lazy(() => import("./components/pages/Settings"));
+const Register = lazy(() => import("./components/pages/Register"));
 
 function App() {
   axios.defaults.baseURL = process.env.REACT_APP_API_URL
@@ -30,6 +31,7 @@ function App() {
             <Switch>
               <Route exact path="/" component={Home} />
               <Route exact path="/login" component={Login} />
+              <Route exact path="/register" component={Register}/>
               <ProtectedRoute exact path="/streams" component={Streams} />
               <ProtectedRoute exact path="/recordings" component={Recordings} />
               <ProtectedRoute exact path="/settings" component={Settings} />
