@@ -2,6 +2,7 @@ import nodemailer from "nodemailer";
 import Mailgen from "mailgen";
 import { PORT } from "../keys.js";
 import pkg from "dobject-routing";
+import multer from "multer";
 
 const { ERequestType } = pkg;
 
@@ -33,7 +34,7 @@ const notification_routes = [
     url: "/api/notify",
     method: ERequestType.POST,
     handlers: [
-      app.use(multer().any()),
+      multer().any(),
       async (req, res) => {
         try {
           const { name, userEmail } = req.body;

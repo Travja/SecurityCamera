@@ -100,6 +100,5 @@ io.sockets.on("connection", socket => {
         socket.to(broadcaster).emit("disconnectPeer", socket.id);
     });
 });
-
 // start to listen
 http.listen(PORT, () => console.log(`Listening on port: ${PORT}`));
