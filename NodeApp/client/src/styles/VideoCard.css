@@ -10,6 +10,10 @@
 }
 
 .video-card .video video {
+    aspect-ratio: 16/9;
+}
+
+.video-card .video video {
     object-fit: fill;
 }
 

@@ -6,6 +6,7 @@ import axios from "axios";
 
 import "./styles/Page.css";
 import "./styles/Drawer.css";
+import "./styles/Authentication.css";
 import "./styles/VideoCard.css";
 import Drawer from "./components/Drawer";
 import Login from "./components/pages/Login";

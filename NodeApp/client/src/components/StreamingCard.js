@@ -6,7 +6,7 @@ import io from "socket.io-client";
 export default class StreamingCard extends Component {
     socket;
     peerConnection;
-    video = <video playsInline autoPlay muted controls></video>;
+    video = <video playsInline autoPlay muted controls height="100%"></video>;
     config = {
         iceServers: [
             {
@@ -22,7 +22,6 @@ export default class StreamingCard extends Component {
     
     constructor(props) {
         super(props);
-        debugger;
         this.socket = io.connect(window.location.origin);
         
         this.socket.on("offer", (id, description) => {
