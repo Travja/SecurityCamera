@@ -7,6 +7,8 @@ import okhttp3.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.HashMap;
 
 @AllArgsConstructor
@@ -25,6 +27,13 @@ public class HttpFileUpload {
     private void okSendRequest() {
         if (!url.startsWith("http"))
             url = "http://" + url;
+
+        try {
+            url = ConnectionInformation.getFinalURL(new URL(url)).toString();
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+
         OkHttpClient client = new OkHttpClient().newBuilder()
                 .build();
         MultipartBody.Builder builder = new MultipartBody.Builder().setType(MultipartBody.FORM);

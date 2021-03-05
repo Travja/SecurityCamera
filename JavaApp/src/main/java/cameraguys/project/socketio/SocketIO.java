@@ -1,23 +1,32 @@
 package cameraguys.project.socketio;
 
-import cameraguys.project.ClientWindow;
-import dev.onvoid.webrtc.*;
-import dev.onvoid.webrtc.media.audio.AudioTrack;
-import dev.onvoid.webrtc.media.video.VideoTrack;
+import cameraguys.project.http.ConnectionInformation;
+import io.socket.client.Socket;
 import io.socket.emitter.Emitter.Listener;
-import org.json.JSONException;
-import org.json.JSONObject;
+import lombok.Getter;
+import lombok.Setter;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.Arrays;
 
 public class SocketIO {
 
-    public static Map<String, RTCPeerConnection> peerConnections = new HashMap<>();
+//    public static Map<String, RTCPeerConnection> peerConnections = new HashMap<>();
 
-    public static Listener answerListener = objects -> {
+    @Getter
+    @Setter
+    public static Socket socket;
+
+    public static Listener onConnect = objects -> {
+        ConnectionInformation connInfo = ConnectionInformation.load();
+        //TODO Set the id of the camera
+        // send it's owner with the socket emitter.
+        System.out.println("Established connection to Socket.");
+        socket.emit("broadcaster", connInfo.getEmail());
+    };
+
+    public static Listener disconnect = objects -> System.out.println(Arrays.toString(objects));
+
+/*    public static Listener answerListener = objects -> {
         try {
             String id = objects[0].toString();
 //                System.out.println(objects[1]);
@@ -60,7 +69,7 @@ public class SocketIO {
                         .put("sdpMLineIndex", rtcIceCandidate.sdpMLineIndex)
                         .put("sdpMid", rtcIceCandidate.sdpMid)
                         .toString();
-                SocketIOBroadcasterClient.getSocket().emit("candidate", id, json);
+                SocketIOBroadcaster.getSocket().emit("candidate", id, json);
             } catch (JSONException e) {
                 System.err.println("Could not convert ICE candidate to json.");
             }
@@ -94,7 +103,7 @@ public class SocketIO {
                                     .put("sdp", peerConnection.getLocalDescription().sdp)
                                     .toString();
 //                                System.out.println(json);
-                            SocketIOBroadcasterClient.getSocket().emit("offer", id, json);
+                            SocketIOBroadcaster.getSocket().emit("offer", id, json);
                             System.out.println("Sent offer.");
                         } catch (JSONException e) {
                             System.err.println("Could not convert to json...");
@@ -116,12 +125,6 @@ public class SocketIO {
         });
     };
 
-    public static Listener disconnectPeer = objects -> {
-        String id = objects[0].toString();
-        peerConnections.get(id).close();
-        peerConnections.remove(id);
-    };
-
     public static Listener candidate = objects -> {
         try {
             String id = objects[0].toString();
@@ -136,15 +139,20 @@ public class SocketIO {
         }
     };
 
+    public static Listener disconnectPeer = objects -> {
+        String id = objects[0].toString();
+//        peerConnections.get(id).close();
+//        peerConnections.remove(id);
+    };*/
 
     public static void clearConnections() {
-        peerConnections.values().forEach(conn -> {
-            for (RTCRtpSender sender : conn.getSenders()) {
-                conn.removeTrack(sender);
-            }
-            conn.close();
-        });
-        peerConnections.clear();
+//        peerConnections.values().forEach(conn -> {
+//            for (RTCRtpSender sender : conn.getSenders()) {
+//                conn.removeTrack(sender);
+//            }
+//            conn.close();
+//        });
+//        peerConnections.clear();
     }
 
 }

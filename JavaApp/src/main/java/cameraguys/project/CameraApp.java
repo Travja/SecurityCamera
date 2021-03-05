@@ -17,12 +17,9 @@ public class CameraApp extends Application {
 
     public static void main(String[] args) {
         extract("opencv_java3413.dll");
-//        extract("webrtc-java.dll");
 
         System.load(new File("lib", "opencv_java3413.dll").getAbsolutePath());
         System.out.println("Loaded OpenCV");
-//        System.load(new File("lib", "webrtc-java.dll").getAbsolutePath());
-//        System.out.println("Loaded WebRTC");
         launch(args);
     }
 

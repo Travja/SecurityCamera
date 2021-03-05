@@ -2,7 +2,8 @@ package cameraguys.project;
 
 import cameraguys.project.http.ConnectionInformation;
 import cameraguys.project.http.HttpFileUpload;
-import cameraguys.project.socketio.SocketIOBroadcasterClient;
+import cameraguys.project.socketio.SocketIOBroadcaster;
+import io.socket.engineio.parser.Base64;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -22,6 +23,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Timer;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class ClientWindow {
@@ -30,7 +34,7 @@ public class ClientWindow {
     private static final double MIN_AREA = 50;//Disturbance has to be more than this area to be identified.
     private static final String NOTIFY_ENDPOINT = "/api/notify";
     private static ClientWindow inst;
-
+    private static Timer tmrVideoProcess;
     private final ConnectionInformation connInfo = ConnectionInformation.load();
     private final VideoCapture capture = new VideoCapture();
     private final Mat camFrame = new Mat();
@@ -40,7 +44,7 @@ public class ClientWindow {
     private final VideoWriter writer = new VideoWriter();
     private final boolean outlineSmallerContours = false;
     private final boolean outlineAll = true;
-    private final SocketIOBroadcasterClient socketio = new SocketIOBroadcasterClient();
+    private final SocketIOBroadcaster socketio = new SocketIOBroadcaster();
     @FXML
     private Button startBtn;
     @FXML
@@ -54,23 +58,18 @@ public class ClientWindow {
     private boolean cameraActive = false;
     private boolean motionDetected = false,
             sentNotif = false;
-
-//    Can probably be deleted after we verify everything works as-is
-//    private ScheduledExecutorService timer;
-//    private static Timer tmrVideoProcess;
-//    private static HttpStreamServer httpStreamService;
-//    private int stage = 0;
+    private ScheduledExecutorService timer;
+    //    private static HttpStreamServer httpStreamService;
+    private int stage = 0;
+    private int iteration = -1;
 
     public ClientWindow() {
         inst = this;
+        socketio.start();
     }
 
     public static ClientWindow inst() {
         return inst;
-    }
-
-    public SocketIOBroadcasterClient getSocket() {
-        return socketio;
     }
 
     @FXML
@@ -89,14 +88,12 @@ public class ClientWindow {
                     sendVideoToServer();
                 }
             }
-            socketio.halt();
         } else {
-            socketio.start();
             startBtn.setText("Stop Camera");
 
-//        Runnable frameGrabber = getGrabber();
-//        this.timer = Executors.newSingleThreadScheduledExecutor();
-//        this.timer.scheduleAtFixedRate(frameGrabber, 0, 1000d / fps, TimeUnit.MILLISECONDS);
+            Runnable frameGrabber = getGrabber();
+            this.timer = Executors.newSingleThreadScheduledExecutor();
+            this.timer.scheduleAtFixedRate(frameGrabber, 0, (long) (1000d / fps), TimeUnit.MILLISECONDS);
 
 //        httpStreamService = new HttpStreamServer(displayFrame);
 //        new Thread(httpStreamService).start();
@@ -200,9 +197,9 @@ public class ClientWindow {
         if (((int) slider.getValue()) == 4) displayFrame.copyTo(processingFrame);
 
         MatOfByte buffer = new MatOfByte();
-        Imgcodecs.imencode(".png", displayFrame, buffer);
+        Imgcodecs.imencode(".jpg", displayFrame, buffer);
         MatOfByte buf2 = new MatOfByte();
-        Imgcodecs.imencode(".png", processingFrame, buf2);
+        Imgcodecs.imencode(".jpg", processingFrame, buf2);
 
         if (motionDetected) {
             //If it's been at least 3 seconds since the last motion and there hasn't been sustained motion, scrap the recording.
@@ -231,12 +228,20 @@ public class ClientWindow {
         }
 
 //        httpStreamService.imag = displayFrame;
+        if (iteration++ % 2 == 0) {
+            String b64 = /*"data:image/jpeg;base64," +*/ Base64.encodeToString(buffer.toArray(), Base64.NO_WRAP);
+//        System.out.println(b64);
+            socketio.sendFrame(b64);
+        }
+
         ByteArrayInputStream bin = new ByteArrayInputStream(buffer.toArray());
         ByteArrayInputStream bin2 = new ByteArrayInputStream(buf2.toArray());
         Image img1 = new Image(bin);
         Image img2 = new Image(bin2);
+
         currentFrame.setImage(img1);
         filters.setImage(img2);
+
         initialFrame.copyTo(diffFrame); //Update diffFrame
         try {
             bin.close();
@@ -283,16 +288,16 @@ public class ClientWindow {
     }
 
     private void stopFrames() {
-//        if (this.timer != null && !this.timer.isShutdown()) {
-//            try {
-        // stop the timer
-//                this.timer.shutdown();
-//                this.timer.awaitTermination((long) (1000d / fps), TimeUnit.MILLISECONDS);
-//            } catch (InterruptedException e) {
-//                // log any exception
-//                System.err.println("Exception in stopping the frame capture, trying to release the camera now... " + e);
-//            }
-//        }
+        if (this.timer != null && !this.timer.isShutdown()) {
+            try {
+                // stop the timer
+                this.timer.shutdown();
+                this.timer.awaitTermination((long) (1000d / fps), TimeUnit.MILLISECONDS);
+            } catch (InterruptedException e) {
+                // log any exception
+                System.err.println("Exception in stopping the frame capture, trying to release the camera now... " + e);
+            }
+        }
 
         if (this.capture != null) {
             // release the camera
@@ -340,42 +345,27 @@ public class ClientWindow {
         System.out.println("Uploading video....");
     }
 
-//    private void openCamera() {
-//        if (!cameraActive) {
-//            System.out.println("Attempting to open feed.");
-//            cameraActive = capture.open(0, 700);
-//            if (cameraActive)
-//                System.out.println("Feed opened.");
-//            else
-//                System.out.println("Could not start camera feed.");
-//        }
-//    }
+    private void openCamera() {
+        if (!cameraActive) {
+            System.out.println("Attempting to open feed.");
+            cameraActive = capture.open(0, 700);
+            if (cameraActive)
+                System.out.println("Feed opened.");
+            else
+                System.out.println("Could not start camera feed.");
+        }
+    }
 
-    //    public static void clean(ByteBuffer buffer) {
-//        try {
-//            Method cleanerMethod = buffer.getClass().getMethod("cleaner");
-//            cleanerMethod.setAccessible(true);
-//            Object cleaner = cleanerMethod.invoke(buffer);
-//            if (cleaner != null) {
-//                Method cleanMethod = cleaner.getClass().getMethod("clean");
-//                cleanMethod.setAccessible(true);
-//                cleanMethod.invoke(cleaner);
-//            }
-//        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-//            e.printStackTrace();
-//        }
-//    }
-
-//    private Runnable getGrabber() {
-//        return () -> {
-//            openCamera();
-//            if (this.capture.isOpened()) {
-//                this.capture.read(camFrame); //Write the current capture to initialFrame
-//                processFrame(camFrame);
-//            } else {
-//                System.err.println("Camera feed not started!");
-//            }
-//        };
-//    }
+    private Runnable getGrabber() {
+        return () -> {
+            openCamera();
+            if (this.capture.isOpened()) {
+                this.capture.read(camFrame); //Write the current capture to initialFrame
+                processFrame(camFrame);
+            } else {
+                System.err.println("Camera feed not started!");
+            }
+        };
+    }
 
 }
