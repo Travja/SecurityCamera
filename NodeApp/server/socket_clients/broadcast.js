@@ -2,12 +2,12 @@ const peerConnections = {};
 const config = {
     iceServers: [
         {
-            urls: process.env.STUN_URL
+            urls: 'stun:stunserver.org:3478'
         },
         {
-            url: process.env.TURN_URL,
-            username: process.env.TURN_USERNAME,
-            credential: process.env.TURN_CREDENTIAL
+            url: 'turn:numb.viagenie.ca',
+            username: 'ypatel@student.neumont.edu',
+            credential: 'Camera_yp'
         }
     ]
 };
