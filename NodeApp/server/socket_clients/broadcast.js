@@ -2,17 +2,17 @@ const peerConnections = {};
 const config = {
     iceServers: [
         {
-            "urls": "stun:stun.l.google.com:19302",
+            urls: "stun:stunserver.org:3478"
         },
-        // {
-        //   "urls": "turn:TURN_IP?transport=tcp",
-        //   "username": "TURN_USERNAME",
-        //   "credential": "TURN_CREDENTIALS"
-        // }
+        {
+            url: 'turn:numb.viagenie.ca',
+            username: 'ypatel@student.neumont.edu',
+            credential: 'Camera_yp'
+        }
     ]
 };
 
-const socket = io.connect(window.location.origin);
+const socket = io.connect();
 
 console.log("URI WINDOW: " + window.location.origin)
 
