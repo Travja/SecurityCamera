@@ -120,7 +120,11 @@ public class SocketIO {
 
     public static Listener disconnectPeer = objects -> {
         String id = objects[0].toString();
-        peerConnections.get(id).close();
+        RTCPeerConnection conn = peerConnections.get(id);
+        for (RTCRtpSender sender : conn.getSenders()) {
+            conn.removeTrack(sender);
+        }
+        conn.close();
         peerConnections.remove(id);
     };
 
