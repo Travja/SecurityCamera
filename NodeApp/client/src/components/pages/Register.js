@@ -1,4 +1,4 @@
-import { Component } from "react";
+import { Component, createRef } from "react";
 import { connect } from "react-redux";
 import AccountAPI from "../../api/Account";
 import { withStyles } from "@material-ui/core/styles";
@@ -36,21 +36,18 @@ class Register extends Component {
             password: "",
             name: ""
         };
+        this.fileInput = createRef();
         this.register = this.register.bind(this);
     }
 
     async register(e) {
-        e.preventDefault();
-        const res = await axios.post("/api/account", {email:this.state.email, password:this.state.password, name:this.state.name});
-        if(res) {
-            AccountAPI.login({password: this.state.password, email: this.state.email}, (err) => {
-                if (err) {
-                    console.log("error", err.error);
-                } else {
-                    window.location.href = "/streams";
-                }
-            });
-        }
+        AccountAPI.login({password: this.state.password, email: this.state.email}, (err) => {
+            if (err) {
+                console.log("error", err.error);
+            } else {
+                window.location.href = "/streams";
+            }
+        });
     };
 
     render() {
@@ -59,15 +56,17 @@ class Register extends Component {
         return (
             <div className="Auth">
                 <Card className={classes.root}>
-                    <form>
+                    <form action="/api/account" enctype="multipart/form-data" method="post">
                         <CardContent>
                             <Typography variant="h5" component="h2">Register</Typography>
-                            <div><TextField onChange={({ target: { value } }) => this.setState({ name: value })} type="text" label="Name"/></div>
-                            <div><TextField onChange={({ target: { value } }) => this.setState({ email: value })} type="email" label="Email" required/></div>
-                            <div><TextField onChange={({ target: { value } }) => this.setState({ password: value })} type="password" label="Password" required/></div>
+                            <div><TextField onChange={({ target: { value } }) => this.setState({ name: value })} type="text" name="name" label="Name"/></div>
+                            <div><TextField onChange={({ target: { value } }) => this.setState({ email: value })} type="email" name="email" label="Email" required/></div>
+                            <div><TextField onChange={({ target: { value } }) => this.setState({ password: value })} type="password" name="password" label="Password" required/></div>
+                            <label>Profile Picture</label>
+                            <div><input type="file" ref={this.fileInput} name="picture"/></div>
                         </CardContent>
                         <CardActions>
-                            <Button variant="contained" color="primary" onClick={this.register}>Register</Button>
+                            <Button variant="contained" color="primary" type="submit" value="Register">Register</Button>
                         </CardActions>
                     </form>
                 </Card>

@@ -13,6 +13,20 @@ import buildRouting from "dobject-routing";
 import general_routes from "./routes/general-routes.js";
 import SQLConfig from "./configurations/SQLConfig.js";
 import {Readable} from "stream";
+import { useSql } from "./configurations/SQLConfig.js";
+import bcrypt from "bcryptjs";
+import fs from "fs";
+
+let storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        fs.mkdirSync("./uploads/profiles/", {recursive: true});
+        cb(null, './uploads/profiles/')
+    },
+    filename: (req, file, cb) => {
+        cb(null, Date.now() + '-' + file.originalname);
+    }
+});
+let upload = multer({storage: storage});
 
 // gather required frameworks and configurations
 const app = express();
@@ -25,7 +39,6 @@ if (NODE_ENV === "development") {
 }
 
 // app setup
-app.use(multer().any());
 app.use(bodyParser.json({limit: "50mb"}));
 app.use(bodyParser.urlencoded({limit: "50mb", extended: true}));
 // spin up configurations
@@ -71,6 +84,17 @@ app.get("/watcher", (req, res) => res.sendFile(path.join(__dirname, "socket_clie
 app.get("/watch.js", (req, res) => res.sendFile(path.join(__dirname, "socket_clients/watch.js")));
 // app.get("/broadcast.js", (req, res) => res.sendFile(path.join(__dirname, "socket_clients/broadcast.js")));
 app.get("/socket.io.js", (req, res) => res.sendFile(path.join(__dirname, "socket_clients/socket.io.js")));
+app.use("/uploads", express.static('uploads'));
+app.post("/api/account", upload.single('picture'), async (req, res, next) => {
+    const { password } = req.body;
+    if(!req.name) req.name = "";
+    const hash = bcrypt.hashSync(password, bcrypt.genSaltSync(11));
+    let request = await (await useSql()).request();
+    let result = await request.query`insert into [User] (Email, Name, Hash) values (${req.body.email}, ${req.body.name}, ${hash}); select SCOPE_IDENTITY() AS id`;
+    let updatReq = await(await useSql()).request();
+    updatReq.query`update [User] set Picture=${'/uploads/profiles/' + req.file.filename} where [User].UserID=${result.recordset[0].id}`
+    return res.sendStatus(201);
+});
 // client setup and routing
 if (NODE_ENV === "production") {
     app.use(express.static("build/client"));

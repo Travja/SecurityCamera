@@ -7,9 +7,9 @@ import {
 import jws from "jsonwebtoken";
 import { REFRESH_TOKEN_SECRET } from "../keys.js";
 import { useSql } from "../configurations/SQLConfig.js";
-import bcrypt from "bcryptjs";
 const { verify } = jws;
 const { ERequestType } = pkg;
+import bcrypt from "bcryptjs";
 
 /**
  * @type {import("dobject-routing").IRoute[]}
@@ -82,23 +82,6 @@ const account_routes = [
         } catch (err) {
           return res.status(500).json({ error: `error: ${err}` });
         }
-      },
-    ],
-  },
-  /**
-   * Creates an account
-   * @type {import("dobject-routing").IRoute}
-   */
-  {
-    url: "/account",
-    method: ERequestType.POST,
-    handlers: [
-      async (req, res) => {
-        const { password } = req.body;
-        const hash = bcrypt.hashSync(password, bcrypt.genSaltSync(11));
-        let request = await (await useSql()).request();
-        await request.query`insert into [User] (Email, Hash) values (${req.body.email}, ${hash})`;
-        return res.sendStatus(201);
       },
     ],
   },

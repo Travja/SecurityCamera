@@ -34,7 +34,6 @@ class Drawer extends React.Component {
         window.addEventListener("click", this.mouseClicked.bind(this))
         AccountAPI.getAccount((err, account) => {
             if (err) console.log("No account");
-            console.log(account);
             if (account) {
                 this.setState({ account: account });
             }
@@ -78,7 +77,7 @@ class Drawer extends React.Component {
             <aside className={this.state.isOpen ? "" : "collapsed"} id="drawer" onClick={this.props?.onClick}>
                 <header>
                     <div>
-                        {this.state.account?.picture ? <img className="profile-picture" src={this.state.account.picture} /> : null}
+                        {this.state.account?.Picture ? <img className="profile-picture" src={(process.env.REACT_APP_API_URL ? process.env.REACT_APP_API_URL : "") + this.state.account.Picture} /> : null}
                     </div>
                     <section>
                         <div>

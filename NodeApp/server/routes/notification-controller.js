@@ -33,6 +33,7 @@ const notification_routes = [
     url: "/api/notify",
     method: ERequestType.POST,
     handlers: [
+      app.use(multer().any()),
       async (req, res) => {
         try {
           const { name, userEmail } = req.body;
