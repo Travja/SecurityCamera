@@ -22,7 +22,12 @@ public class HttpFileUpload {
     @Setter
     private HashMap<String, String> formData;
 
+    /**
+     * Sends an email to the current user with the attached file.
+     */
     private void okSendRequest() {
+        ConnectionInformation info = ConnectionInformation.load();
+
         if (!url.startsWith("http"))
             url = "http://" + url;
         OkHttpClient client = new OkHttpClient().newBuilder()
@@ -30,9 +35,9 @@ public class HttpFileUpload {
         MultipartBody.Builder builder = new MultipartBody.Builder().setType(MultipartBody.FORM);
 
         formData.keySet().forEach(key -> {
-            builder.addFormDataPart(key, formData.get(key));
-//                .addFormDataPart("name", "Travja")
-//                .addFormDataPart("userEmail", "the.only.t.craft@gmail.com");
+            builder.addFormDataPart(key, formData.get(key))
+                    .addFormDataPart("name", info.getName())
+                    .addFormDataPart("userEmail", info.getEmail());
         });
 
         builder.addFormDataPart("path", file.getAbsolutePath(),
@@ -45,7 +50,6 @@ public class HttpFileUpload {
                 .build();
         try {
             Response response = client.newCall(request).execute();
-//            System.out.println(response.body().string());
             if (response.isSuccessful()) {
                 file.delete(); //Cleanup!
             } else {
@@ -57,6 +61,9 @@ public class HttpFileUpload {
         }
     }
 
+    /**
+     * Uploads the image and sends it in an email to the user.
+     */
     public void uploadImage() {
         okSendRequest();
     }

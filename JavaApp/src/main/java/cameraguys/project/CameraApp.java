@@ -17,12 +17,9 @@ public class CameraApp extends Application {
 
     public static void main(String[] args) {
         extract("opencv_java3413.dll");
-//        extract("webrtc-java.dll");
 
         System.load(new File("lib", "opencv_java3413.dll").getAbsolutePath());
         System.out.println("Loaded OpenCV");
-//        System.load(new File("lib", "webrtc-java.dll").getAbsolutePath());
-//        System.out.println("Loaded WebRTC");
         launch(args);
     }
 
@@ -38,25 +35,6 @@ public class CameraApp extends Application {
                 e.printStackTrace();
             }
         }
-    }
-
-    public static void openCameraWindow(Stage primaryStage) {
-
-        try {
-            FXMLLoader loader = new FXMLLoader(CameraApp.class.getClassLoader().getResource("ClientWindow.fxml"));
-            GridPane root = loader.load();
-            ClientWindow controller = loader.getController();
-
-            Scene scene = new Scene(root);
-            primaryStage.setTitle("Camera Test");
-            primaryStage.setScene(scene);
-
-            primaryStage.setOnCloseRequest(we -> controller.setClosed());
-            primaryStage.show();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
     }
 
     @Override
@@ -76,5 +54,24 @@ public class CameraApp extends Application {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public static void openCameraWindow(Stage primaryStage) {
+
+        try {
+            FXMLLoader loader = new FXMLLoader(CameraApp.class.getClassLoader().getResource("ClientWindow.fxml"));
+            GridPane root = loader.load();
+            ClientWindow controller = loader.getController();
+
+            Scene scene = new Scene(root);
+            primaryStage.setTitle("Camera App");
+            primaryStage.setScene(scene);
+
+            primaryStage.setOnCloseRequest(we -> controller.setClosed());
+            primaryStage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 }

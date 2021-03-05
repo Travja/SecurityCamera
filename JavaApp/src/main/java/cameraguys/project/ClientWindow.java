@@ -33,14 +33,16 @@ public class ClientWindow {
 
     private final ConnectionInformation connInfo = ConnectionInformation.load();
     private final VideoCapture capture = new VideoCapture();
-    private final Mat camFrame = new Mat();
     private final Mat diffFrame = new Mat();
     private final Mat displayFrame = new Mat();
     private final Mat processingFrame = new Mat();
     private final VideoWriter writer = new VideoWriter();
+
     private final boolean outlineSmallerContours = false;
     private final boolean outlineAll = true;
+
     private final SocketIOBroadcasterClient socketio = new SocketIOBroadcasterClient();
+
     @FXML
     private Button startBtn;
     @FXML
@@ -48,18 +50,13 @@ public class ClientWindow {
     @FXML
     private Slider slider;
     private File outFile = null; //Set upon motion detected.
+
     private long initialMotion = 0l;
     private long lastMotion = 0l;
     private long lastGC = System.currentTimeMillis();
-    private boolean cameraActive = false;
+
     private boolean motionDetected = false,
             sentNotif = false;
-
-//    Can probably be deleted after we verify everything works as-is
-//    private ScheduledExecutorService timer;
-//    private static Timer tmrVideoProcess;
-//    private static HttpStreamServer httpStreamService;
-//    private int stage = 0;
 
     public ClientWindow() {
         inst = this;
@@ -103,6 +100,12 @@ public class ClientWindow {
         }
     }
 
+    /**
+     * Takes in a {@link Mat} composed of the difference of two frames
+     * and finds contours based on the mat.
+     * @param inputmat The mat to analyze
+     * @return A list of Rects where motion was detected.
+     */
     public ArrayList<Rect> findContours(Mat inputmat) {
         Mat v = new Mat();
         List<MatOfPoint> contours = new ArrayList<>();
@@ -154,6 +157,16 @@ public class ClientWindow {
 
     }
 
+    /**
+     * Takes the provided frame and analyzes it with the previous frame to see if there is motion.
+     * Displays the rendered Mats in the client window.
+     * @param initialFrame
+     */
+    /*
+    This is really kind of the meat and potatoes of the Java app.
+    This method is responsible for motion detection, telling the app to record the frames
+    as a video, and if the recorded video is even worthwhile.
+     */
     public void processFrame(Mat initialFrame) {
         initialFrame.copyTo(displayFrame); //Clone it for display purposes.
         initialFrame.copyTo(processingFrame); //This will be changed based on slider to show progress in filters.
@@ -162,7 +175,7 @@ public class ClientWindow {
 
         Imgproc.cvtColor(initialFrame, initialFrame, Imgproc.COLOR_BGRA2GRAY); //Convert to grayscale
         if (((int) slider.getValue()) == 0) initialFrame.copyTo(processingFrame);
-        Imgproc.GaussianBlur(initialFrame, initialFrame, new Size(5, 5), 0); //Blur the image a little to de-noise
+        Imgproc.GaussianBlur(initialFrame, initialFrame, new Size(5, 5), 0); //Blur the image a little to "de-noise"
         if (((int) slider.getValue()) == 1) initialFrame.copyTo(processingFrame);
 
         if (diffFrame.empty() || diffFrame.width() != initialFrame.width())
@@ -170,6 +183,7 @@ public class ClientWindow {
 
         Core.subtract(initialFrame, diffFrame, diffFrame); //Subtract the previous frame from the current frame.
         if (((int) slider.getValue()) == 2) diffFrame.copyTo(processingFrame);
+
         Imgproc.adaptiveThreshold(diffFrame, diffFrame, 255, Imgproc.ADAPTIVE_THRESH_MEAN_C, Imgproc.THRESH_BINARY_INV, 5, 2);
         if (((int) slider.getValue()) == 3) diffFrame.copyTo(processingFrame);
 
@@ -253,6 +267,13 @@ public class ClientWindow {
         }
     }
 
+    /**
+     * Uses the provided MatOfByte, writes an image, and
+     * uses it to send the user a notification email that there has
+     * been motion detected in the scene.
+     *
+     * @param buffer {@link MatOfByte} to send
+     */
     private void sendEmail(MatOfByte buffer) {
         Thread thread = new Thread(() -> {
             System.out.println("Uploading thumbnail.");
@@ -282,28 +303,8 @@ public class ClientWindow {
         thread.start();
     }
 
-    private void stopFrames() {
-//        if (this.timer != null && !this.timer.isShutdown()) {
-//            try {
-        // stop the timer
-//                this.timer.shutdown();
-//                this.timer.awaitTermination((long) (1000d / fps), TimeUnit.MILLISECONDS);
-//            } catch (InterruptedException e) {
-//                // log any exception
-//                System.err.println("Exception in stopping the frame capture, trying to release the camera now... " + e);
-//            }
-//        }
-
-        if (this.capture != null) {
-            // release the camera
-            this.capture.release();
-        }
-
-        cameraActive = false;
-    }
-
     public void setClosed() {
-        stopFrames();
+//        stopFrames();
         stopVideo();
         socketio.kill();
 
@@ -340,6 +341,16 @@ public class ClientWindow {
         System.out.println("Uploading video....");
     }
 
+
+    //Everything down here is if we just wanted to run OpenCV standalone, without the WebRTC Stream
+
+//    private final Mat camFrame = new Mat();
+//    private boolean cameraActive = false;
+//    private ScheduledExecutorService timer;
+//    private static Timer tmrVideoProcess;
+//    private static HttpStreamServer httpStreamService;
+//    private int stage = 0;
+
 //    private void openCamera() {
 //        if (!cameraActive) {
 //            System.out.println("Attempting to open feed.");
@@ -350,6 +361,26 @@ public class ClientWindow {
 //                System.out.println("Could not start camera feed.");
 //        }
 //    }
+
+    /*    private void stopFrames() {
+//        if (this.timer != null && !this.timer.isShutdown()) {
+//            try {
+        // stop the timer
+//                this.timer.shutdown();
+//                this.timer.awaitTermination((long) (1000d / fps), TimeUnit.MILLISECONDS);
+//            } catch (InterruptedException e) {
+//                // log any exception
+//                System.err.println("Exception in stopping the frame capture, trying to release the camera now... " + e);
+//            }
+//        }
+
+        if (this.capture != null) {
+            // release the camera
+            this.capture.release();
+        }
+
+        cameraActive = false;
+    }*/
 
     //    public static void clean(ByteBuffer buffer) {
 //        try {

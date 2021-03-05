@@ -12,6 +12,11 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * @deprecated Overtaken by WebRTC
+ * This method of streaming simply creates a Http request that doesn't close
+ * until terminated and keeps feeding data to the requester.
+ */
 public class HttpStreamServer implements Runnable {
 
 
