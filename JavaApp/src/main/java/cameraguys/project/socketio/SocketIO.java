@@ -20,11 +20,8 @@ public class SocketIO {
     public static Listener answerListener = objects -> {
         try {
             String id = objects[0].toString();
-//                System.out.println(objects[1]);
             JSONObject json = (JSONObject) objects[1];
             RTCSessionDescription description = new RTCSessionDescription(RTCSdpType.valueOf(json.getString("type").toUpperCase()), json.getString("sdp"));
-//                RTCSessionDescription description = (RTCSessionDescription) objects[1];
-//                System.out.println("id:" + id);
             peerConnections.get(id).setRemoteDescription(description, new SetSessionDescriptionObserver() {
                 @Override
                 public void onSuccess() {
@@ -33,7 +30,7 @@ public class SocketIO {
 
                 @Override
                 public void onFailure(String s) {
-
+                    System.out.println("remote description failure");
                 }
             });
         } catch (JSONException e) {
@@ -46,11 +43,18 @@ public class SocketIO {
         String id = objects[0].toString();
         System.out.println("Received watcher");
 
-        RTCIceServer iceServer = new RTCIceServer();
-        iceServer.urls.add("stun:stun.l.google.com:19302");
+        RTCIceServer stunServer = new RTCIceServer();
+        stunServer.urls.add("stun:stunserver.org:3478");
+
+        RTCIceServer turnServer = new RTCIceServer();
+        turnServer.urls.add("stun:stunserver.org:3478");
+        turnServer.username = "ypatel@student.neumont.edu";
+        turnServer.password = "Camera_yp";
+
 
         RTCConfiguration config = new RTCConfiguration();
-        config.iceServers.add(iceServer);
+        config.iceServers.add(stunServer);
+        config.iceServers.add(turnServer);
 
         RTCPeerConnection peerConnection = ClientWindow.inst().getSocket().getFactory().createPeerConnection(config, (PeerConnectionObserver) rtcIceCandidate -> {
             //add the stream to the track
@@ -88,12 +92,10 @@ public class SocketIO {
                     public void onSuccess() {
                         try {
                             System.out.println("Set description");
-//                                System.out.println(peerConnection.getLocalDescription());
                             String json = new JSONObject()
                                     .put("type", peerConnection.getLocalDescription().sdpType.toString().toLowerCase())
                                     .put("sdp", peerConnection.getLocalDescription().sdp)
                                     .toString();
-//                                System.out.println(json);
                             SocketIOBroadcasterClient.getSocket().emit("offer", id, json);
                             System.out.println("Sent offer.");
                         } catch (JSONException e) {
@@ -126,9 +128,7 @@ public class SocketIO {
         try {
             String id = objects[0].toString();
             JSONObject json = (JSONObject) objects[1];
-//                System.out.println(json);
             RTCIceCandidate candidate = new RTCIceCandidate(json.getString("sdpMid"), json.getInt("sdpMLineIndex"), json.getString("candidate"));
-//            RTCIceCandidate candidate = (RTCIceCandidate) objects[1];
             peerConnections.get(id).addIceCandidate(candidate);
         } catch (JSONException e) {
             System.err.println("Could not convert candidate to ICE Candidate");
