@@ -93,7 +93,6 @@ class Drawer extends React.Component {
                 <section className="navigation">
                     {
                         this.state.account ? (<>
-                            <DrawerItem icon={mdiHome} content="Home" />
                             <DrawerItem path="/recordings" icon={mdiFilmstripBoxMultiple} content="Recordings" />
                             <DrawerItem path="/streams" icon={mdiVideoWireless} content="Streams" />
                             <DrawerItem path="/settings" icon={mdiCog} content="Settings" />

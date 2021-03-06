@@ -62,7 +62,8 @@ app.post("/api/account", upload.single('picture'), async (req, res, next) => {
         let updatReq = await(await useSql()).request();
         updatReq.query`update [User] set Picture=${'/uploads/profiles/' + req.file.filename} where [User].UserID=${result.recordset[0].id}`
     }
-    return res.sendStatus(201);
+
+    return res.redirect("/login");
 });
 // client setup and routing
 if (NODE_ENV === "production") {

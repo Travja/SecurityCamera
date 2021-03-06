@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
+import {NavLink} from "react-router-dom";
 
 class Home extends Component {
   constructor(props) {
@@ -16,7 +17,11 @@ class Home extends Component {
   }
 
   render() {
-    return <div>its the home page!</div>;
+    return <div style={{display:"flex", alignItems:"center", justifyContent: "center", height: "100vh"}}>
+        <p style={{margin: "0", textAlign: "center"}}>
+            Welcome to Securty Camera to start <NavLink exact to='/login'>Login or Register</NavLink>
+        </p>
+    </div>;
   }
 }
 
