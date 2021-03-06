@@ -12,8 +12,11 @@ const config = {
     ]
 };
 
+let roomId = "yes";
+let streams = [];
 const socket = io.connect();
-const video = document.querySelector("video");
+const video = document.getElementById("vid");
+const video2 = document.getElementById("vid2");
 const enableAudioButton = document.querySelector("#enable-audio");
 
 console.log("URI WINDOW: " + window.location.origin)
@@ -33,14 +36,18 @@ socket.on("offer", (id, description) => {
         .then(() => peerConnection.createAnswer())
         .then(sdp => peerConnection.setLocalDescription(sdp))
         .then(() => {
-            socket.emit("answer", id, peerConnection.localDescription);
+            socket.emit("answer", id, peerConnection.localDescription, roomId);
         });
+
     peerConnection.ontrack = event => {
+        console.log("pushing a stream")
+        streams.push(event.streams[0]);
+        console.log("no. of streams", streams.length);
         video.srcObject = event.streams[0];
     };
     peerConnection.onicecandidate = event => {
         if (event.candidate) {
-            socket.emit("candidate", id, event.candidate);
+            socket.emit("candidate", id, event.candidate, roomId);
         }
     };
 });
@@ -59,11 +66,12 @@ socket.on("candidate", (id, candidate) => {
 });
 
 socket.on("connect", () => {
-    socket.emit("watcher");
+    socket.emit("join", roomId);
+    socket.emit("watcher", roomId);
 });
 
 socket.on("broadcaster", () => {
-    socket.emit("watcher");
+    socket.emit("watcher", roomId);
 });
 
 window.onunload = window.onbeforeunload = () => {

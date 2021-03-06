@@ -52,30 +52,33 @@ const io = new Server(http);
 io.sockets.on("error", e => console.log(e));
 io.sockets.on("connection", socket => {
 
-    const roomClients = io.sockets.adapter.rooms[roomId] || { length: 0 };
-    const numberOfClients = roomClients.length;
+    socket.on('join', (roomId) => {
+        console.log(`Joining room ${roomId} and emitting room_joined socket event`);
+        socket.join(roomId);
+    });
 
-    socket.on("broadcaster", () => {
+    socket.on("broadcaster", (roomId) => {
         broadcaster = socket.id;
         console.log("Got broadcaster");
         console.log(broadcaster);
-        socket.broadcast.emit("broadcaster");
+        socket.to(roomId).emit("broadcaster");
     });
-    socket.on("watcher", () => {
-        socket.to(broadcaster).emit("watcher", socket.id);
+    
+    socket.on("watcher", (roomId) => {
+        socket.to(roomId).emit("watcher", socket.id);
     });
-    socket.on("offer", (id, message) => {
-        socket.to(id).emit("offer", socket.id, message);
+    socket.on("offer", (id, message, roomId) => {
+        socket.to(roomId).emit("offer", socket.id, message);
     });
-    socket.on("answer", (id, message) => {
-        socket.to(id).emit("answer", socket.id, message);
+    socket.on("answer", (id, message, roomId) => {
+        socket.to(roomId).emit("answer", socket.id, message);
     });
-    socket.on("candidate", (id, message) => {
+    socket.on("candidate", (id, message, roomId) => {
         console.log("Got candidate");
-        socket.to(id).emit("candidate", socket.id, message);
+        socket.to(roomId).emit("candidate", socket.id, message);
     });
-    socket.on("disconnect", () => {
-        socket.to(broadcaster).emit("disconnectPeer", socket.id);
+    socket.on("disconnect", (roomId) => {
+        socket.to(roomId).emit("disconnectPeer", socket.id);
     });
 });
 

@@ -32,7 +32,7 @@ socket.on("watcher", id => {
 
     peerConnection.onicecandidate = event => {
         if (event.candidate) {
-            socket.emit("candidate", id, event.candidate);
+            socket.emit("candidate", id, event.candidate, roomId);
         }
     };
 
@@ -40,7 +40,7 @@ socket.on("watcher", id => {
         .createOffer()
         .then(sdp => peerConnection.setLocalDescription(sdp))
         .then(() => {
-            socket.emit("offer", id, peerConnection.localDescription);
+            socket.emit("offer", id, peerConnection.localDescription, roomId);
         });
 });
 
@@ -126,7 +126,10 @@ function gotStream(stream) {
         option => option.text === stream.getVideoTracks()[0].label
     );
     videoElement.srcObject = stream;
-    socket.emit("broadcaster");
+
+    socket.emit("join", roomId);
+    socket.emit("broadcaster", roomId);
+
 }
 
 function handleError(error) {
