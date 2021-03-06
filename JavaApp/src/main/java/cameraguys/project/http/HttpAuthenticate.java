@@ -38,12 +38,12 @@ public class HttpAuthenticate {
 
         String json = "{" +
                 "\"email\": \"" + email + "\"," +
-                "\"password\": \"" + password + "\"," +
+                "\"password\": \"" + password + "\"" +
                 "}";
 
         Request body = new Request.Builder()
                 .url(url)
-                .method("POST", RequestBody.create(MediaType.parse("text/json"), json))
+                .method("POST", RequestBody.create(MediaType.parse("application/json"), json))
                 .build();
 
         Response response = client.newCall(body).execute();

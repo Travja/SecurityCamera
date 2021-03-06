@@ -31,7 +31,7 @@ const notification_routes = [
    * Sends an email notification.
    */
   {
-    url: "/api/notify",
+    url: "/notify",
     method: ERequestType.POST,
     handlers: [
       multer().any(),

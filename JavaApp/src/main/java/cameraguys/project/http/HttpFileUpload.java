@@ -44,11 +44,7 @@ public class HttpFileUpload {
                 .build();
         MultipartBody.Builder builder = new MultipartBody.Builder().setType(MultipartBody.FORM);
 
-        formData.keySet().forEach(key -> {
-            builder.addFormDataPart(key, formData.get(key))
-                    .addFormDataPart("name", info.getName())
-                    .addFormDataPart("userEmail", info.getEmail());
-        });
+        formData.keySet().forEach(key -> builder.addFormDataPart(key, formData.get(key)));
 
         builder.addFormDataPart("path", file.getAbsolutePath(),
                 RequestBody.create(MediaType.parse("application/octet-stream"),
