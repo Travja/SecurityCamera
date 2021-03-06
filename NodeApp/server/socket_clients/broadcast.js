@@ -34,12 +34,14 @@ socket.on("watcher", id => {
         }
     };
 
-    peerConnection
-        .createOffer()
-        .then(sdp => peerConnection.setLocalDescription(sdp))
-        .then(() => {
-            socket.emit("offer", id, peerConnection.localDescription);
-        });
+    peerConnection.onnegotiationneeded = () => {
+        peerConnection
+            .createOffer()
+            .then(sdp => peerConnection.setLocalDescription(sdp))
+            .then(() => {
+                socket.emit("offer", id, peerConnection.localDescription);
+            });
+    }
 });
 
 socket.on("candidate", (id, candidate) => {
