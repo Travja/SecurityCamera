@@ -15,7 +15,9 @@ import io.socket.client.IO;
 import io.socket.client.Socket;
 import lombok.Getter;
 
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
@@ -68,6 +70,13 @@ public class SocketIOBroadcasterClient {
         String url = connInfo.getUrl();
         if (!url.startsWith("http"))
             url = "http://" + url;
+
+        try {
+            url = ConnectionInformation.getFinalURL(new URL(url)).toString();
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+
         System.out.println("Attempting to connect to socket on " + url);
         socket = IO.socket(URI.create(url));
 

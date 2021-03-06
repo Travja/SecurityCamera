@@ -53,7 +53,7 @@ const account_routes = [
     ],
   },
   /**
-   * Logs a user into the system and retuns the JWT tokens.
+   * Logs a user into the system and returns the JWT tokens.
    * @type {import("dobject-routing").IRoute}
    */
   {
@@ -64,7 +64,7 @@ const account_routes = [
         try {
           const { email, password } = req.body;
           let request = await (await useSql()).request();
-          const result = await request.query`select * from [User] where Email = ${email}`;
+          const result = await request.query`select * from [User] where Email = "${email}"`;
           if (!result.recordset[0])
             return res.status(404).json({ error: "No user found" });
           if (!bcrypt.compareSync(password, result.recordset[0].Hash))

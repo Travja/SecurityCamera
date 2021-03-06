@@ -37,25 +37,6 @@ public class CameraApp extends Application {
         }
     }
 
-    @Override
-    public void start(Stage primaryStage) {
-
-        try {
-            if (!new File("server.conf").exists()) {
-                FXMLLoader confLoader = new FXMLLoader(getClass().getClassLoader().getResource("ConfigurationWindow.fxml"));
-                Parent confRoot = confLoader.load();
-
-                primaryStage.setTitle("Configure Your Camera!");
-                primaryStage.setScene(new Scene(confRoot));
-                primaryStage.show();
-            } else {
-                openCameraWindow(primaryStage);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
     public static void openCameraWindow(Stage primaryStage) {
 
         try {
@@ -73,5 +54,26 @@ public class CameraApp extends Application {
             e.printStackTrace();
         }
 
+    }
+
+    @Override
+    public void start(Stage primaryStage) {
+        System.out.println("Hello?");
+        try {
+            if (!new File("server.conf").exists()) {
+                System.out.println("Server configuration doesn't exist.");
+                FXMLLoader confLoader = new FXMLLoader(getClass().getClassLoader().getResource("ConfigurationWindow.fxml"));
+                Parent confRoot = confLoader.load();
+
+                primaryStage.setTitle("Configure Your Camera!");
+                primaryStage.setScene(new Scene(confRoot));
+                System.out.println("Showing configuration window");
+                primaryStage.show();
+            } else {
+                openCameraWindow(primaryStage);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
