@@ -40,29 +40,35 @@ socket.on("offer", (id, description) => {
         });
 
     peerConnection.ontrack = event => {
+        console.log("trackEvent", event);
         console.log("pushing a stream")
         streams.push(event.streams[0]);
         console.log("no. of streams", streams.length);
         video.srcObject = event.streams[0];
+        if (streams > 3) {
+            video2.srcObject = event.streams[3];
+        }
+        console.log("Streams:",streams);
     };
     peerConnection.onicecandidate = event => {
         if (event.candidate) {
-            socket.emit("candidate", id, event.candidate, roomId);
+            socket.emit("candidate", id, event.candidate, roomId, false);
         }
     };
 });
 
-
-socket.on("candidate", (id, candidate) => {
-    try {
-        candidate = JSON.parse(candidate);
-    } catch (e) {
-        console.log("Supplied candidate is already a json object");
+socket.on("candidate", (id, candidate, isBroadcaster) => {
+    if (isBroadcaster) {
+        try {
+            candidate = JSON.parse(candidate);
+        } catch (e) {
+            console.log("Supplied candidate is already a json object");
+        }
+        console.log(candidate);
+        peerConnection
+            .addIceCandidate(new RTCIceCandidate(candidate))
+            .catch(e => console.error(e));
     }
-    console.log(candidate);
-    peerConnection
-        .addIceCandidate(new RTCIceCandidate(candidate))
-        .catch(e => console.error(e));
 });
 
 socket.on("connect", () => {

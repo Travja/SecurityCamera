@@ -32,7 +32,7 @@ socket.on("watcher", id => {
 
     peerConnection.onicecandidate = event => {
         if (event.candidate) {
-            socket.emit("candidate", id, event.candidate, roomId);
+            socket.emit("candidate", id, event.candidate, roomId, true);
         }
     };
 
@@ -44,8 +44,10 @@ socket.on("watcher", id => {
         });
 });
 
-socket.on("candidate", (id, candidate) => {
-    peerConnections[id].addIceCandidate(new RTCIceCandidate(candidate));
+socket.on("candidate", (id, candidate, isBroadcast) => {
+    if (!isBroadcast){
+        peerConnections[id].addIceCandidate(new RTCIceCandidate(candidate));
+    }
 });
 
 socket.on("disconnectPeer", id => {
