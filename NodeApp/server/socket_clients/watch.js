@@ -1,4 +1,4 @@
-let peerConnection;
+const peerConnections={};
 const config = {
     iceServers: [
         {
@@ -24,22 +24,22 @@ console.log("URI WINDOW: " + window.location.origin)
 enableAudioButton.addEventListener("click", enableAudio)
 
 socket.on("offer", (id, description) => {
-    peerConnection = new RTCPeerConnection(config);
+    peerConnections[id] = new RTCPeerConnection(config);
     try {
         description = JSON.parse(description);
     } catch (e) {
         console.log("Supplied description is already a json object");
     }
     console.log(description);
-    peerConnection
+    peerConnections[id]
         .setRemoteDescription(description)
-        .then(() => peerConnection.createAnswer())
-        .then(sdp => peerConnection.setLocalDescription(sdp))
+        .then(() => peerConnections[id].createAnswer())
+        .then(sdp => peerConnections[id].setLocalDescription(sdp))
         .then(() => {
-            socket.emit("answer", id, peerConnection.localDescription, roomId);
+            socket.emit("answer", id, peerConnections[id].localDescription, roomId);
         });
 
-    peerConnection.ontrack = event => {
+    peerConnections[id].ontrack = event => {
         console.log("trackEvent", event);
         console.log("pushing a stream")
         streams.push(event.streams[0]);
@@ -49,8 +49,9 @@ socket.on("offer", (id, description) => {
             video2.srcObject = event.streams[3];
         }
         console.log("Streams:",streams);
+        console.log("PeerConnections", peerConnections);
     };
-    peerConnection.onicecandidate = event => {
+    peerConnections[id].onicecandidate = event => {
         if (event.candidate) {
             socket.emit("candidate", id, event.candidate, roomId, false);
         }
@@ -65,8 +66,9 @@ socket.on("candidate", (id, candidate, isBroadcaster) => {
             console.log("Supplied candidate is already a json object");
         }
         console.log(candidate);
-        peerConnection
+        peerConnections[id]
             .addIceCandidate(new RTCIceCandidate(candidate))
+            .then(() => {console.log("ice candidate added.")})
             .catch(e => console.error(e));
     }
 });
@@ -82,7 +84,9 @@ socket.on("broadcaster", () => {
 
 window.onunload = window.onbeforeunload = () => {
     socket.close();
-    peerConnection.close();
+    for (let peerConnection in peerConnections) {
+        peerConnections[peerConnection].close();
+    }
 };
 
 function enableAudio() {

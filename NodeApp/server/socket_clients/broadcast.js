@@ -19,7 +19,9 @@ const socket = io.connect();
 console.log("URI WINDOW: " + window.location.origin)
 
 socket.on("answer", (id, description) => {
-    peerConnections[id].setRemoteDescription(description).then(r => console.log(r));
+    console.log("Answering to:", id);
+    console.log("Peer Connections: ", peerConnections);
+    peerConnections[id].setRemoteDescription(description).then(r => console.log(r)).catch((e) => console.log(e));
 });
 
 socket.on("watcher", id => {
@@ -36,17 +38,25 @@ socket.on("watcher", id => {
         }
     };
 
-    peerConnection
-        .createOffer()
-        .then(sdp => peerConnection.setLocalDescription(sdp))
-        .then(() => {
-            socket.emit("offer", id, peerConnection.localDescription, roomId);
-        });
+    // peerConnection
+    //     .createOffer()
+    //     .then(sdp => peerConnection.setLocalDescription(sdp))
+    //     .then(() => {
+    //         socket.emit("offer", id, peerConnection.localDescription, roomId);
+    //     });
+
+    peerConnection.onnegotiationneeded = () =>{
+        peerConnection.createOffer()
+            .then(sdp => peerConnection.setLocalDescription(sdp))
+            .then(() => {
+                socket.emit("offer", id, peerConnection.localDescription, roomId);
+            });
+    }
 });
 
 socket.on("candidate", (id, candidate, isBroadcast) => {
     if (!isBroadcast){
-        peerConnections[id].addIceCandidate(new RTCIceCandidate(candidate));
+        peerConnections[id].addIceCandidate(new RTCIceCandidate(candidate)).then(e => console.log(e));
     }
 });
 

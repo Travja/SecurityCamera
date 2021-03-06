@@ -65,6 +65,7 @@ io.sockets.on("connection", socket => {
     });
 
     socket.on("watcher", (roomId) => {
+        console.log("Watcher: " + socket.id);
         socket.to(roomId).emit("watcher", socket.id);
     });
     socket.on("offer", (id, message, roomId) => {
