@@ -69,14 +69,14 @@ io.sockets.on("connection", socket => {
         socket.to(roomId).emit("watcher", socket.id);
     });
     socket.on("offer", (id, message, roomId) => {
-        socket.to(roomId).emit("offer", socket.id, message);
+        socket.to(id).emit("offer", socket.id, message);
     });
     socket.on("answer", (id, message, roomId) => {
-        socket.to(roomId).emit("answer", socket.id, message);
+        socket.to(id).emit("answer", socket.id, message);
     });
     socket.on("candidate", (id, message, roomId, isBroadcaster) => {
         console.log("Got candidate");
-        socket.to(roomId).emit("candidate", socket.id, message, isBroadcaster);
+        socket.to(id).emit("candidate", socket.id, message, isBroadcaster);
     });
     socket.on("disconnect", (roomId) => {
         socket.to(roomId).emit("disconnectPeer", socket.id);

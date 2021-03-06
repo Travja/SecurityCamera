@@ -1,4 +1,4 @@
-const peerConnections={};
+const peerConnections = {};
 const config = {
     iceServers: [
         {
@@ -24,6 +24,8 @@ console.log("URI WINDOW: " + window.location.origin)
 enableAudioButton.addEventListener("click", enableAudio)
 
 socket.on("offer", (id, description) => {
+    if (peerConnections[id]) return;
+
     peerConnections[id] = new RTCPeerConnection(config);
     try {
         description = JSON.parse(description);
@@ -33,23 +35,28 @@ socket.on("offer", (id, description) => {
     console.log(description);
     peerConnections[id]
         .setRemoteDescription(description)
-        .then(() => peerConnections[id].createAnswer())
-        .then(sdp => peerConnections[id].setLocalDescription(sdp))
-        .then(() => {
-            socket.emit("answer", id, peerConnections[id].localDescription, roomId);
-        });
+        .then(() => peerConnections[id].createAnswer()
+            .then(sdp => peerConnections[id].setLocalDescription(sdp))
+            .then(() => {
+                socket.emit("answer", id, peerConnections[id].localDescription, roomId);
+            }));
 
     peerConnections[id].ontrack = event => {
-        console.log("trackEvent", event);
-        console.log("pushing a stream")
-        streams.push(event.streams[0]);
-        console.log("no. of streams", streams.length);
-        video.srcObject = event.streams[0];
-        if (streams > 3) {
-            video2.srcObject = event.streams[3];
+        if(event.track.kind == "video") {
+            console.log("trackEvent", event);
+            console.log("pushing a stream")
+            streams.push(event.streams[0]);
+            console.log("no. of streams", streams.length);
+            //<video id="vid" playsinline autoplay muted></video>
+            let video = document.createElement("video");
+            video.autoplay = true;
+            video.muted = true;
+            video.playsinline = true;
+
+            video.srcObject = event.streams[0];
+            console.log("Streams:", streams);
+            document.body.appendChild(video);
         }
-        console.log("Streams:",streams);
-        console.log("PeerConnections", peerConnections);
     };
     peerConnections[id].onicecandidate = event => {
         if (event.candidate) {
@@ -84,8 +91,8 @@ socket.on("broadcaster", () => {
 
 window.onunload = window.onbeforeunload = () => {
     socket.close();
-    for (let peerConnection in peerConnections) {
-        peerConnections[peerConnection].close();
+    for (let pc in peerConnections) {
+        peerConnections[pc].close();
     }
 };
 

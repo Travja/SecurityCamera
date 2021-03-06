@@ -18,13 +18,14 @@ const socket = io.connect();
 
 console.log("URI WINDOW: " + window.location.origin)
 
-socket.on("answer", (id, description) => {
-    console.log("Answering to:", id);
-    console.log("Peer Connections: ", peerConnections);
-    peerConnections[id].setRemoteDescription(description).then(r => console.log(r)).catch((e) => console.log(e));
+socket.on("answer", async (id, description) => {
+    if (peerConnections[id]
+        && peerConnections[id].remoteDescription == description) return;
+    await peerConnections[id].setRemoteDescription(description);
 });
 
 socket.on("watcher", id => {
+    if (peerConnections[id]) return;
 
     const peerConnection = new RTCPeerConnection(config);
     peerConnections[id] = peerConnection;
@@ -55,8 +56,11 @@ socket.on("watcher", id => {
 });
 
 socket.on("candidate", (id, candidate, isBroadcast) => {
-    if (!isBroadcast){
-        peerConnections[id].addIceCandidate(new RTCIceCandidate(candidate)).then(e => console.log(e));
+    if (!isBroadcast) {
+        peerConnections[id].addIceCandidate(new RTCIceCandidate(candidate)).catch(e => {
+            if(e)
+                console.log(e);
+        });
     }
 });
 
@@ -76,15 +80,15 @@ const videoSelect = document.querySelector("select#videoSource");
 const textEntry = document.getElementById('txtId');
 const button = document.getElementById('btnConnect');
 
-function joinRoom(){
+function joinRoom() {
     console.log("on click");
-    if (textEntry.value !== ""){
+    if (textEntry.value !== "") {
         console.log(textEntry.value)
         roomId = textEntry.value;
         getStream()
             .then(getDevices)
             .then(gotDevices);
-    }else {
+    } else {
         alert("Please input room id");
     }
 }
@@ -120,8 +124,8 @@ function getStream() {
     const audioSource = audioSelect.value;
     const videoSource = videoSelect.value;
     const constraints = {
-        audio: { deviceId: audioSource ? { exact: audioSource } : undefined },
-        video: { deviceId: videoSource ? { exact: videoSource } : undefined }
+        audio: {deviceId: audioSource ? {exact: audioSource} : undefined},
+        video: {deviceId: videoSource ? {exact: videoSource} : undefined}
     };
     return navigator.mediaDevices
         .getUserMedia(constraints)
