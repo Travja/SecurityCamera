@@ -78,6 +78,7 @@ const account_routes = [
           return res.status(200).json({
             token: access_token,
             refreshToken: refresh_token,
+            UserID: result.recordset[0].UserID
           });
         } catch (err) {
           return res.status(500).json({ error: `error: ${err}` });
