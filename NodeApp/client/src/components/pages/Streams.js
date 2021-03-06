@@ -67,7 +67,7 @@ class Streams extends Component {
                         if (event.track.kind == "video") {
                             console.log("trackEvent", event);
                             console.log("pushing a stream")
-                            this.streams.push(event.streams[0]);
+                            this.streams.push({"stream":event.streams[0], "id":id});
                             console.log("no. of streams", this.streams.length);
                             let video = <video playsInline autoPlay muted controls ref={vid => vid.srcObject = event.streams[0]} width="100%"></video>;
                             //video.srcObject = event.streams[0];
@@ -90,6 +90,19 @@ class Streams extends Component {
                 this.socket.on("broadcaster", () => {
                     this.socket.emit("watcher", this.roomId);
                 });
+
+                this.socket.on("disconnectPeer", (id) => {
+                    console.log("remove stream: ",id);
+                    for( let i = 0; i < this.streams.length; i++){
+
+                        if ( this.streams[i]["id"] === id) {
+                            console.log("stream removed with id: ",id);
+                            this.streams.splice(i, 1);
+                        }
+
+                    }
+                    console.log("streams", this.streams)
+                })
 
                 window.onunload = window.onbeforeunload = () => {
                     this.socket.close();

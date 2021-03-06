@@ -70,6 +70,7 @@ socket.on("disconnectPeer", id => {
 });
 
 window.onunload = window.onbeforeunload = () => {
+    socket.emit("disconnect", roomId)
     socket.close();
 };
 

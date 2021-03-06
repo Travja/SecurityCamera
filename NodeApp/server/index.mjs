@@ -102,10 +102,11 @@ io.sockets.on("connection", socket => {
         socket.to(id).emit("answer", socket.id, message);
     });
     socket.on("candidate", (id, message, roomId, isBroadcaster) => {
-        console.log("Got candidate");
+       // console.log("Got candidate");
         socket.to(id).emit("candidate", socket.id, message, isBroadcaster);
     });
     socket.on("disconnect", (roomId) => {
+        console.log("disconnect from room:", roomId);
         socket.to(roomId).emit("disconnectPeer", socket.id);
     });
 });
