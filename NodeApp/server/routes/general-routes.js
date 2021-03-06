@@ -50,7 +50,7 @@ const general_routes = {
         async (req, res) => {
             if(req.file) {
                 let request = await (await useSql()).request();
-                await request.query`insert into Recording (RecordingDate, Camera, BlobURL) values (${req.body.Date}, ${req.body.CameraID}, ${'/uploads/recordings/'+req.file.filename});`;
+                await request.query`insert into Recording (RecordingDate, UserID, BlobURL) values (${req.body.Date}, ${req.body.UserID}, ${'/uploads/recordings/'+req.file.filename});`;
                 res.sendStatus(200);
             }
         },
