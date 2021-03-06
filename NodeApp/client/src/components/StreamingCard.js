@@ -10,20 +10,20 @@ export default class StreamingCard extends Component {
     config = {
         iceServers: [
             {
-                urls: "stun:stun.l.google.com:19302",
+                urls: process.env.REACT_APP_STUN_URL
             },
-            // {
-            //   "urls": "turn:TURN_IP?transport=tcp",
-            //   "username": "TURN_USERNAME",
-            //   "credential": "TURN_CREDENTIALS"
-            // }
-        ],
+            {
+                url: process.env.REACT_APP_TURN_URL,
+                username: process.env.REACT_APP_TURN_USERNAME,
+                credential: process.env.REACT_APP_TURN_CREDENTIAL
+            }
+        ]
     };
     
     constructor(props) {
         super(props);
-        this.socket = io.connect(window.location.origin);
-        
+        this.socket = io.connect();
+
         this.socket.on("offer", (id, description) => {
             this.peerConnection = new RTCPeerConnection(this.config);
             try {
@@ -44,10 +44,11 @@ export default class StreamingCard extends Component {
             };
             this.peerConnection.onicecandidate = event => {
                 if (event.candidate) {
-                    this.this.socket.emit("candidate", id, event.candidate);
+                    this.socket.emit("candidate", id, event.candidate);
                 }
             };
         });
+
         this.socket.on("candidate", (id, candidate) => {
             try {
                 candidate = JSON.parse(candidate);
@@ -59,9 +60,11 @@ export default class StreamingCard extends Component {
                 .addIceCandidate(new RTCIceCandidate(candidate))
                 .catch(e => console.error(e));
         });
+
         this.socket.on("connect", () => {
             this.socket.emit("watcher");
         });
+
         this.socket.on("broadcaster", () => {
             this.socket.emit("watcher");
         });
