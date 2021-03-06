@@ -19,7 +19,8 @@ public class ConnectionInformation {
     private String name,
             email,
             password,
-            url;
+            url,
+            cameraName;
 
     /**
      * Loads the connection information from the server.conf file.
@@ -33,6 +34,7 @@ public class ConnectionInformation {
             conn.setEmail(reader.readLine());
             conn.setPassword(reader.readLine());
             conn.setUrl(reader.readLine());
+            conn.setCameraName(reader.readLine());
             return conn;
         } catch (IOException e) {
             System.err.println("Could not read server configuration");
