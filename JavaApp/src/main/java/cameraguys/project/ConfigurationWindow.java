@@ -1,5 +1,6 @@
 package cameraguys.project;
 
+import cameraguys.project.http.HttpAuthenticate;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -17,22 +18,33 @@ public class ConfigurationWindow {
     public TextField nameField,
             emailField,
             passwordField,
-            serverField;
+            serverField,
+            camNameField;
 
     @FXML
     public boolean testConnection(ActionEvent actionEvent) {
         //TODO Test the connection
-        boolean connected = true;
+        boolean connected = false;
+        try {
+            connected = new HttpAuthenticate(serverField.getText() + "/api/login", emailField.getText(), passwordField.getText()).authenticate();
 
-        if (connected) {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setHeaderText("Connection successful!");
-            alert.setContentText("You're good to go! The connection succeeded!");
-            alert.showAndWait();
-        } else {
+            if (connected) {
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setHeaderText("Connection successful!");
+                alert.setContentText("You're good to go! The connection succeeded!");
+                alert.showAndWait();
+            } else {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setHeaderText("Could not connect");
+                alert.setContentText("Authentication failed.");
+                alert.showAndWait();
+            }
+        } catch (IOException e) {
+            System.err.println("Could not execute auth check: " + e.getCause());
+            e.printStackTrace();
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setHeaderText("Could not connect");
-            alert.setContentText("It appears that some of the information your entered is incorrect. We could not establish a connection to the server.");
+            alert.setContentText("Could not establish a connection to the server.");
             alert.showAndWait();
         }
 
@@ -48,7 +60,8 @@ public class ConfigurationWindow {
                 writer.write(nameField.getText() + "\n");
                 writer.write(emailField.getText() + "\n");
                 writer.write(passwordField.getText() + "\n");
-                writer.write(serverField.getText());
+                writer.write(serverField.getText() + "\n");
+                writer.write(camNameField.getText());
             } catch (IOException e) {
                 e.printStackTrace();
             }

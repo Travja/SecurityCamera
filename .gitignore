@@ -8,7 +8,8 @@ JavaApp/lib/
 **/package-lock.json
 *.mp4
 NodeApp/build
-server.conf
+server*.conf
 footage/
 lib/
 out/
+NodeApp/uploads/profiles/

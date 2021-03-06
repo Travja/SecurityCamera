@@ -1,7 +1,7 @@
 import pkg from "dobject-routing";
 import CameraRoutes from "../routes/camera-routes.js";
 import AccountRoutes from "../routes/account-routes.js";
-import NofificationRoutes from "../routes/notification-controller.js";
+import NotificationRoutes from "../routes/notification-controller.js";
 
 const { ERequestType } = pkg;
 
@@ -30,7 +30,7 @@ const general_routes = {
           res.send("Hello");
         },
       ],
-      routes: [...CameraRoutes, ...AccountRoutes, ...NofificationRoutes],
+      routes: [...CameraRoutes, ...AccountRoutes, ...NotificationRoutes],
     },
     {
       url: "/upload-recording",

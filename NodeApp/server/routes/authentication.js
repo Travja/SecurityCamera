@@ -18,7 +18,7 @@ export const authenticateUser = (req, res, next) => {
         .status(403)
         .json({ error: "Not Authorized to access this route." });
     verify(token, ACCESS_TOKEN_SECRET, async (err, data) => {
-      if (err) return res.status(403).json({ error: "Invlaid token" });
+      if (err) return res.status(403).json({ error: "Invalid token" });
       let request = await (await useSql()).request();
       const result = await request.query`select * from [User] where UserID = ${data.id}`;
       if (result.recordset[0]) {
