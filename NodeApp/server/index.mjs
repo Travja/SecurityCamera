@@ -52,6 +52,9 @@ const io = new Server(http);
 io.sockets.on("error", e => console.log(e));
 io.sockets.on("connection", socket => {
 
+    const roomClients = io.sockets.adapter.rooms[roomId] || { length: 0 };
+    const numberOfClients = roomClients.length;
+
     socket.on("broadcaster", () => {
         broadcaster = socket.id;
         console.log("Got broadcaster");

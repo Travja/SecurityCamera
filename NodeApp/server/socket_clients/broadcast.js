@@ -12,6 +12,8 @@ const config = {
     ]
 };
 
+let roomId;
+
 const socket = io.connect();
 
 console.log("URI WINDOW: " + window.location.origin)
@@ -59,13 +61,24 @@ window.onunload = window.onbeforeunload = () => {
 const videoElement = document.querySelector("video");
 const audioSelect = document.querySelector("select#audioSource");
 const videoSelect = document.querySelector("select#videoSource");
+const textEntry = document.getElementById('txtId');
+const button = document.getElementById('btnConnect');
+
+function joinRoom(){
+    console.log("on click");
+    if (textEntry.value !== ""){
+        console.log(textEntry.value)
+        roomId = textEntry.value;
+        getStream()
+            .then(getDevices)
+            .then(gotDevices);
+    }else {
+        alert("Please input room id");
+    }
+}
 
 audioSelect.onchange = getStream;
 videoSelect.onchange = getStream;
-
-getStream()
-    .then(getDevices)
-    .then(gotDevices);
 
 function getDevices() {
     return navigator.mediaDevices.enumerateDevices();

@@ -5,6 +5,12 @@
     <meta charset="UTF-8" />
 </head>
 <body>
+
+<section>
+    <label for="txtId">Enter room ID here:</label><input type="text" id="txtId"/>
+    <button type="button" id="btnConnect" onclick="joinRoom()">Connect</button>
+</section>
+
 <section class="select">
     <label for="audioSource">Audio source: </label>
     <select id="audioSource"></select>
@@ -14,6 +20,7 @@
     <label for="videoSource">Video source: </label>
     <select id="videoSource"></select>
 </section>
+
 
 <video playsinline autoplay muted></video>
 <script src="./socket.io.js"></script>
