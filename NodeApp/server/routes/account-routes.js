@@ -109,8 +109,12 @@ const account_routes = [
     handlers: [
       authenticateUser,
       async (req, res) => {
-        //TODO: Implement
         // `req.user` stores the authenticated user. No need to retrieve from the database.
+          let request = await (await useSql()).request();
+          const hash = bcrypt.hashSync(req.body.Password, bcrypt.genSaltSync(11));
+          console.log(req.user.Email);
+          await request.query`update [User] set Name=${req.body.Name}, Hash=${hash} where Email=${req.user.Email}`;
+          res.sendStatus(200);
       },
     ],
   },
