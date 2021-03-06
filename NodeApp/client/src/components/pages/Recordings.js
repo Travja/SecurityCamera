@@ -45,7 +45,7 @@ class Recordings extends Component {
                 save={recording.title}
                 key={new Date().toString()}
               >
-                <img src={recording.thumbnail} width="100%" height="100%" />
+                <video src={(process.env.REACT_APP_API_URL ? process.env.REACT_APP_API_URL : "") + recording.BlobURL} width="100%" height="100%" />
               </RecordingCard>
             );
           }),

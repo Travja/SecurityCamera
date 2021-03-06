@@ -50,20 +50,11 @@ export default class SQLConfig {
                 );
             END;`;
             await request.query`IF  NOT EXISTS (SELECT * FROM sys.objects 
-            WHERE object_id = OBJECT_ID(N'[dbo].[Camera]') AND type in (N'U')) BEGIN
-                CREATE TABLE Camera (
-                    CameraID INT PRIMARY KEY IDENTITY(1,1),
-                    StreamURL VARCHAR(2048),
-                    [Name] VARCHAR(500),
-                    [Owner] INT FOREIGN KEY REFERENCES [User](UserID)
-                );
-            END;`;
-            await request.query`IF  NOT EXISTS (SELECT * FROM sys.objects 
             WHERE object_id = OBJECT_ID(N'[dbo].[Recording]') AND type in (N'U')) BEGIN
                 CREATE TABLE Recording (
                     RecordingID INT PRIMARY KEY IDENTITY(1,1),
                     RecordingDate DATETIME,
-                    Camera INT FOREIGN KEY REFERENCES Camera(CameraID),
+                    UserID INT FOREIGN KEY REFERENCES [User](UserID),
                     RecordingLength INT,
                     BlobURL VARCHAR(2048)
                 );

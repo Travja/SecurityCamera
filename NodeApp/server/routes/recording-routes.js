@@ -40,7 +40,7 @@ const recording_routes = [
       async (req, res) => {
         try {
           let request = await (await useSql()).request();
-          const result = await request.query`select * from Recording;`;
+          const result = await request.query`select * from Recording where UserID=${req.user.UserID};`;
           res.send(result.recordset);
         } catch (err) {
           return res.status(500).json({ error: err });
