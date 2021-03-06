@@ -58,8 +58,10 @@ app.post("/api/account", upload.single('picture'), async (req, res, next) => {
     const hash = bcrypt.hashSync(password, bcrypt.genSaltSync(11));
     let request = await (await useSql()).request();
     let result = await request.query`insert into [User] (Email, Name, Hash) values (${req.body.email}, ${req.body.name}, ${hash}); select SCOPE_IDENTITY() AS id`;
-    let updatReq = await(await useSql()).request();
-    updatReq.query`update [User] set Picture=${'/uploads/profiles/' + req.file.filename} where [User].UserID=${result.recordset[0].id}`
+    if(req.file) {
+        let updatReq = await(await useSql()).request();
+        updatReq.query`update [User] set Picture=${'/uploads/profiles/' + req.file.filename} where [User].UserID=${result.recordset[0].id}`
+    }
     return res.sendStatus(201);
 });
 // client setup and routing
