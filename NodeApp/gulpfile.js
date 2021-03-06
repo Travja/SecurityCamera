@@ -3,7 +3,7 @@ import nodemon from 'gulp-nodemon';
 import {exec} from 'child_process';
 import dotenv from 'dotenv';
 
-dotenv.config({path: "./server/.env"});
+dotenv.config({path: "./.env"});
 
 export function installServer() {
     return exec('npm i');
