@@ -2,25 +2,30 @@ const peerConnections = {};
 const config = {
     iceServers: [
         {
-            urls: process.env.STUN_URL
+            urls: 'stun:stunserver.org:3478'
         },
         {
-            url: process.env.TURN_URL,
-            username: process.env.TURN_USERNAME,
-            credential: process.env.TURN_CREDENTIAL
+            url: 'turn:numb.viagenie.ca',
+            username: 'ypatel@student.neumont.edu',
+            credential: 'Camera_yp'
         }
     ]
 };
+
+let roomId;
 
 const socket = io.connect();
 
 console.log("URI WINDOW: " + window.location.origin)
 
-socket.on("answer", (id, description) => {
-    peerConnections[id].setRemoteDescription(description).then(r => console.log(r));
+socket.on("answer", async (id, description) => {
+    if (peerConnections[id]
+        && peerConnections[id].remoteDescription == description) return;
+    await peerConnections[id].setRemoteDescription(description);
 });
 
 socket.on("watcher", id => {
+    if (peerConnections[id]) return;
 
     const peerConnection = new RTCPeerConnection(config);
     peerConnections[id] = peerConnection;
@@ -30,22 +35,33 @@ socket.on("watcher", id => {
 
     peerConnection.onicecandidate = event => {
         if (event.candidate) {
-            socket.emit("candidate", id, event.candidate);
+            socket.emit("candidate", id, event.candidate, roomId, true);
         }
     };
 
-    peerConnection.onnegotiationneeded = () => {
-        peerConnection
-            .createOffer()
+    // peerConnection
+    //     .createOffer()
+    //     .then(sdp => peerConnection.setLocalDescription(sdp))
+    //     .then(() => {
+    //         socket.emit("offer", id, peerConnection.localDescription, roomId);
+    //     });
+
+    peerConnection.onnegotiationneeded = () =>{
+        peerConnection.createOffer()
             .then(sdp => peerConnection.setLocalDescription(sdp))
             .then(() => {
-                socket.emit("offer", id, peerConnection.localDescription);
+                socket.emit("offer", id, peerConnection.localDescription, roomId);
             });
     }
 });
 
-socket.on("candidate", (id, candidate) => {
-    peerConnections[id].addIceCandidate(new RTCIceCandidate(candidate));
+socket.on("candidate", (id, candidate, isBroadcast) => {
+    if (!isBroadcast) {
+        peerConnections[id].addIceCandidate(new RTCIceCandidate(candidate)).catch(e => {
+            if(e)
+                console.log(e);
+        });
+    }
 });
 
 socket.on("disconnectPeer", id => {
@@ -61,13 +77,24 @@ window.onunload = window.onbeforeunload = () => {
 const videoElement = document.querySelector("video");
 const audioSelect = document.querySelector("select#audioSource");
 const videoSelect = document.querySelector("select#videoSource");
+const textEntry = document.getElementById('txtId');
+const button = document.getElementById('btnConnect');
+
+function joinRoom() {
+    console.log("on click");
+    if (textEntry.value !== "") {
+        console.log(textEntry.value)
+        roomId = textEntry.value;
+        getStream()
+            .then(getDevices)
+            .then(gotDevices);
+    } else {
+        alert("Please input room id");
+    }
+}
 
 audioSelect.onchange = getStream;
 videoSelect.onchange = getStream;
-
-getStream()
-    .then(getDevices)
-    .then(gotDevices);
 
 function getDevices() {
     return navigator.mediaDevices.enumerateDevices();
@@ -97,8 +124,8 @@ function getStream() {
     const audioSource = audioSelect.value;
     const videoSource = videoSelect.value;
     const constraints = {
-        audio: { deviceId: audioSource ? { exact: audioSource } : undefined },
-        video: { deviceId: videoSource ? { exact: videoSource } : undefined }
+        audio: {deviceId: audioSource ? {exact: audioSource} : undefined},
+        video: {deviceId: videoSource ? {exact: videoSource} : undefined}
     };
     return navigator.mediaDevices
         .getUserMedia(constraints)
@@ -115,7 +142,10 @@ function gotStream(stream) {
         option => option.text === stream.getVideoTracks()[0].label
     );
     videoElement.srcObject = stream;
-    socket.emit("broadcaster");
+
+    socket.emit("join", roomId);
+    socket.emit("broadcaster", roomId);
+
 }
 
 function handleError(error) {
