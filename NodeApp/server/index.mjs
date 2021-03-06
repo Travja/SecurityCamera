@@ -16,7 +16,6 @@ import {Readable} from "stream";
 import { useSql } from "./configurations/SQLConfig.js";
 import bcrypt from "bcryptjs";
 import fs from "fs";
-console.log(process.env);
 let storage = multer.diskStorage({
     destination: (req, file, cb) => {
         fs.mkdirSync("./uploads/profiles/", {recursive: true});
