@@ -37,11 +37,13 @@ class Recordings extends Component {
         this.setState({
           loading: false,
           recordings: (recordings ? recordings : []).map((recording) => {
+              console.log(recording);
             return (
               <RecordingCard
                 title={new Date().toString()}
-                download={recording.url}
+                download={(process.env.REACT_APP_API_URL ? process.env.REACT_APP_API_URL : "") + recording.BlobURL}
                 save={recording.title}
+                key={new Date().toString()}
               >
                 <img src={recording.thumbnail} width="100%" height="100%" />
               </RecordingCard>
@@ -75,7 +77,7 @@ class Recordings extends Component {
                     gap: "45px",
                   }}
                 >
-                  {this.recordings}
+                  {recordings}
                 </div>
               )}
             </Fragment>
