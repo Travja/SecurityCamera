@@ -13,6 +13,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Merely defines {@link Listener}s to be used as part of SocketIO.
+ * The Listeners here provide broadcaster/watcher relays to establish
+ * a WebRTC peer connection.
+ */
 public class SocketIO {
 
     public static Map<String, RTCPeerConnection> peerConnections = new HashMap<>();
@@ -120,7 +125,11 @@ public class SocketIO {
 
     public static Listener disconnectPeer = objects -> {
         String id = objects[0].toString();
-        peerConnections.get(id).close();
+        RTCPeerConnection conn = peerConnections.get(id);
+        for (RTCRtpSender sender : conn.getSenders()) {
+            conn.removeTrack(sender);
+        }
+        conn.close();
         peerConnections.remove(id);
     };
 

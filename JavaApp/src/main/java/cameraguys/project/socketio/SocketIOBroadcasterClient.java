@@ -13,6 +13,7 @@ import dev.onvoid.webrtc.media.video.VideoTrack;
 import dev.onvoid.webrtc.media.video.VideoTrackSink;
 import io.socket.client.IO;
 import io.socket.client.Socket;
+import lombok.Getter;
 
 import java.net.URI;
 import java.util.Arrays;
@@ -23,19 +24,22 @@ import java.util.logging.Logger;
 
 public class SocketIOBroadcasterClient {
     private static Socket socket;
+
     private ConnectionInformation connInfo = ConnectionInformation.load();
     private PeerConnectionFactory factory = new PeerConnectionFactory();
+
+    @Getter
     private AudioTrack audioTrack;
-    private VideoTrack track;
+    @Getter
+    private VideoTrack videoTrack;
     private VideoTrackSink sink;
     private VideoDeviceSource vid = new VideoDeviceSource();
+
     private boolean killed = false;
     private boolean cameraOn = false;
 
     private long time = System.currentTimeMillis();
     private int iteration = 0;
-
-//    private static Thread socketio;
 
     public static Socket getSocket() {
         return socket;
@@ -54,9 +58,12 @@ public class SocketIOBroadcasterClient {
 
         initDevices();
         initSocket();
-
     }
 
+    /**
+     * Starts the socket and establishes connection to the server.
+     * The socket is used to establish WebRTC connections.
+     */
     private void initSocket() {
         String url = connInfo.getUrl();
         if (!url.startsWith("http"))
@@ -104,17 +111,16 @@ public class SocketIOBroadcasterClient {
     public void kill() {
         if (killed) return;
         killed = true;
-//        socketio.interrupt();
 
         SocketIO.clearConnections();
 
         if (audioTrack != null)
             audioTrack.dispose();
-        if (track != null) {
+        if (videoTrack != null) {
             if (sink != null)
-                track.removeSink(sink);
+                videoTrack.removeSink(sink);
             vid.stop();
-            track.dispose();
+            videoTrack.dispose();
         }
         if (factory != null)
             factory.dispose();
@@ -123,11 +129,19 @@ public class SocketIOBroadcasterClient {
         if (socket != null)
             socket.close();
 
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         System.exit(0); //Lol! This is one way to do it :P
 
 //        vid.dispose();//TODO Crashes here... Not sure why. But it kills the app ¯\_(ツ)_/¯
     }
 
+    /**
+     * Turns on the camera and sets up the feed.
+     */
     public void initDevices() {
         VideoDevice device = MediaDevices.getVideoCaptureDevices().get(0);
 
@@ -142,7 +156,7 @@ public class SocketIOBroadcasterClient {
         audioOptions.noiseSuppression = true;
         AudioSource audioSource = factory.createAudioSource(audioOptions);
         audioTrack = factory.createAudioTrack("AUDIO", audioSource);
-        track = factory.createVideoTrack("CAM", vid);
+        videoTrack = factory.createVideoTrack("CAM", vid);
 
         sink = videoFrame -> {
             if (System.currentTimeMillis() - time < 1000d / ClientWindow.fps) {
@@ -155,7 +169,7 @@ public class SocketIOBroadcasterClient {
             if (iteration < 50) iteration++;
             if (iteration >= 50 && !cameraOn) cameraOn = true;
         };
-        track.addSink(sink);
+        videoTrack.addSink(sink);
     }
 
     public AudioTrack getAudioTrack() {
@@ -163,7 +177,7 @@ public class SocketIOBroadcasterClient {
     }
 
     public VideoTrack getVideoTrack() {
-        return track;
+        return videoTrack;
     }
 
     public PeerConnectionFactory getFactory() {

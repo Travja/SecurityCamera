@@ -19,6 +19,11 @@ public class ConnectionInformation {
             password,
             url;
 
+    /**
+     * Loads the connection information from the server.conf file.
+     *
+     * @return {@link ConnectionInformation}
+     */
     public static ConnectionInformation load() {
         ConnectionInformation conn = new ConnectionInformation();
         try (BufferedReader reader = new BufferedReader(new FileReader(new File("server.conf")))) {

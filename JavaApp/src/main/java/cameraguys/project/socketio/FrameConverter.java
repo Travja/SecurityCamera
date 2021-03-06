@@ -12,9 +12,14 @@ import java.nio.ByteBuffer;
 
 public class FrameConverter {
 
-    private static boolean started = false;
     private static boolean processing = false;
 
+    /**
+     * Starts the conversion process for the {@link VideoFrame}
+     * and pushes the frame over to OpenCV to handle processing.
+     *
+     * @param videoFrame {@link VideoFrame}
+     */
     public static void queue(VideoFrame videoFrame) {
         if (processing) return;
 
@@ -25,9 +30,12 @@ public class FrameConverter {
         processing = false;
     }
 
+    /**
+     * Converts the I420 buffer into RGB and sends the constructed
+     * {@link Mat} to OpenCV for processing.
+     * @param raw The {@link I420Buffer} to convert
+     */
     private static void convertAndSendMat(I420Buffer raw) {
-        int bufferSize = raw.getWidth() * raw.getHeight() * 4;
-
         int length = raw.getStrideU();
 
         ByteBuffer y = raw.getDataY();
@@ -39,6 +47,16 @@ public class FrameConverter {
         int row = 0;
         int column = 0;
 
+        /*
+        YUV formatting consists of a long string of Y bytes. These Y bytes,
+        applied with the U and V bytes applicable for their sector, make up the
+        coloring of the image. This simply lines up the YUV sectors and converts
+        each piece into its RGB counterpart and puts it into the Mat above.
+
+        For more information about YUV, see:
+        https://en.wikipedia.org/wiki/YUV#Y%E2%80%B2UV420p_(and_Y%E2%80%B2V12_or_YV12)_to_RGB888_conversion
+        https://wiki.videolan.org/YUV
+         */
         while (y.hasRemaining()) {
             byte y1 = y.get();
             byte y2 = y.get();
@@ -90,28 +108,13 @@ public class FrameConverter {
                 row++;
             }
         }
-//        if (y.isDirect())
-//            ClientWindow.clean(y);
-//        if (u.isDirect())
-//            ClientWindow.clean(u);
-//        if (v.isDirect())
-//            ClientWindow.clean(v);
-
-//        ByteBuffer buff = ByteBuffer.allocate(bufferSize);
-//        try {
-//            VideoBufferConverter.convertFromI420(raw, buff, FourCC.RGBA);
-//            Mat mat = FrameConverter.toMat(stride, length, buff.array());
-//            if (buff.isDirect())
-//                ClientWindow.clean(buff);
 
         ClientWindow.inst().processFrame(mat);
         mat.free();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
     }
 
     /**
+     * @deprecated No longer intended for use.
      * Converts a given Image into a BufferedImage
      *
      * @param img The Image to be converted
@@ -136,6 +139,11 @@ public class FrameConverter {
         if (uValue < 0) uValue = uValue + 255;
         if (vValue < 0) vValue = vValue + 255;
 
+        /*
+        These are just slightly different algorithms to convert the color value.
+        It seems that the current coloring is a little off still, but these methods
+        were more off than what is currently being used.
+         */
         //YUV420 (444?)
 //        int rTmp = (int) (yValue + (1.370705 * (vValue - 128)));
 //        int gTmp = (int) (yValue - (0.698001 * (vValue - 128)) - (0.337633 * (uValue - 128)));
