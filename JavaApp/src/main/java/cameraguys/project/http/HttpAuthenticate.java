@@ -56,6 +56,9 @@ public class HttpAuthenticate {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        return response.code() == 200;
+        boolean success = response.code() == 200;
+        response.body().close();
+        response.close();
+        return success;
     }
 }

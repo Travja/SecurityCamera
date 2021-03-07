@@ -57,7 +57,8 @@ public class ClientWindow {
     private long lastGC = System.currentTimeMillis();
 
     private boolean motionDetected = false,
-            sentNotif = false;
+            sentNotif = false,
+            shutdown = false;
 
     public ClientWindow() {
         inst = this;
@@ -79,7 +80,8 @@ public class ClientWindow {
 
             if (System.currentTimeMillis() - initialMotion >= 3000 && lastMotion - initialMotion < 2000) {
                 System.out.println("Deleting useless video.");
-                outFile.delete();
+                if (outFile != null && outFile.exists())
+                    outFile.delete();
             } else {
                 //If there has been motion in the last 10 seconds, process the video.
                 if (System.currentTimeMillis() - lastMotion > TimeUnit.SECONDS.toMillis(10)) {
@@ -171,6 +173,7 @@ public class ClientWindow {
     as a video, and if the recorded video is even worthwhile.
      */
     public void processFrame(Mat initialFrame) {
+        if (shutdown) return;
         initialFrame.copyTo(displayFrame); //Clone it for display purposes.
         initialFrame.copyTo(processingFrame); //This will be changed based on slider to show progress in filters.
 
@@ -299,6 +302,7 @@ public class ClientWindow {
                 HttpFileUpload imgData = new HttpFileUpload(connInfo.getUrl() + NOTIFY_ENDPOINT, "path", file, formData);
                 if (imgData.uploadImage()) {
                     file.delete(); //Cleanup!
+                    System.out.println("Sent!");
                 } else {
                     System.err.println("Email notification failed to send. Image will not be deleted.");
                 }
@@ -312,7 +316,11 @@ public class ClientWindow {
 
     public void setClosed() {
 //        stopFrames();
+        shutdown = true;
+        boolean filePending = motionDetected && outFile.exists();
         stopVideo();
+        if (filePending)
+            outFile.delete();
         socketio.kill();
 
 //        if (httpStreamService != null && httpStreamService.isRunning())
@@ -353,6 +361,7 @@ public class ClientWindow {
             HttpFileUpload imgData = new HttpFileUpload(connInfo.getUrl() + VIDEO_ENDPOINT, "recording", file, formData);
             if (imgData.uploadImage()) {
                 file.delete(); //Cleanup!
+                System.out.println("Done!");
             } else {
                 System.err.println("Failed to upload video to server. Video will not be deleted.");
             }

@@ -17,10 +17,7 @@ import java.nio.file.Path;
 public class CameraApp extends Application {
 
     public static void main(String[] args) {
-        extract("opencv_java3413.dll");
-
-        System.load(new File("lib", "opencv_java3413.dll").getAbsolutePath());
-        System.out.println("Loaded OpenCV");
+        System.out.println("Starting application. If this is all you see.... I have no idea what's wrong.");
         launch(args);
     }
 
@@ -42,6 +39,11 @@ public class CameraApp extends Application {
         try {
             ConnectionInformation info = ConnectionInformation.load();
             boolean connected = ConnectionInformation.testConnection(info.getUrl(), info.getEmail(), info.getPassword(), false);
+
+            extract("opencv_java3413.dll");
+
+            System.load(new File("lib", "opencv_java3413.dll").getAbsolutePath());
+            System.out.println("Loaded OpenCV");
 
             if (connected) {
                 FXMLLoader loader = new FXMLLoader(CameraApp.class.getClassLoader().getResource("ClientWindow.fxml"));

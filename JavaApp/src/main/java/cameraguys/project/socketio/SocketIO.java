@@ -29,8 +29,10 @@ public class SocketIO {
             JSONObject json = (JSONObject) objects[1];
             RTCSessionDescription description = new RTCSessionDescription(RTCSdpType.valueOf(json.getString("type").toUpperCase()), json.getString("sdp"));
 
-            if (peerConnections.containsKey(id)){
-                if (peerConnections.get(id).getRemoteDescription().equals(description)) return;
+            if (peerConnections.containsKey(id)) {
+                RTCPeerConnection conn = peerConnections.get(id);
+                if (conn != null && conn.getRemoteDescription() != null && conn.getRemoteDescription().equals(description))
+                    return;
             }
 
             peerConnections.get(id).setRemoteDescription(description, new SetSessionDescriptionObserver() {
@@ -132,6 +134,10 @@ public class SocketIO {
     public static Listener disconnectPeer = objects -> {
         String id = objects[0].toString();
         RTCPeerConnection conn = peerConnections.get(id);
+        if (conn == null) {
+            peerConnections.remove(id);
+            return;
+        }
         for (RTCRtpSender sender : conn.getSenders()) {
             conn.removeTrack(sender);
         }
@@ -155,8 +161,10 @@ public class SocketIO {
     };
 
     public static void clearConnections() {
-        SocketIOBroadcasterClient.getSocket().emit("disconnect");
-        SocketIOBroadcasterClient.getSocket().close();
+        if (SocketIOBroadcasterClient.getSocket() != null) {
+            SocketIOBroadcasterClient.getSocket().disconnect();
+            SocketIOBroadcasterClient.getSocket().close();
+        }
         peerConnections.values().forEach(conn -> {
             for (RTCRtpSender sender : conn.getSenders()) {
                 conn.removeTrack(sender);

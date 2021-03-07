@@ -60,7 +60,10 @@ public class HttpFileUpload {
             if (!response.isSuccessful()) {
                 System.err.println("File upload failed: " + response.code() + ". " + response.body().string());
             }
-            return response.isSuccessful();
+            boolean success = response.isSuccessful();
+            response.body().close();
+            response.close();
+            return success;
         } catch (IOException e) {
             System.err.println("Could not upload file!");
             e.printStackTrace();
