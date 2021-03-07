@@ -79,6 +79,8 @@ public class SocketIOBroadcasterClient {
 
         System.out.println("Attempting to connect to socket on " + url);
         socket = IO.socket(URI.create(url));
+        ConnectionInformation info = ConnectionInformation.load();
+        SocketIO.roomId = info.getEmail();
 
         socket.connect();
 
