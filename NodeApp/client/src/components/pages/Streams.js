@@ -69,8 +69,7 @@ class Streams extends Component {
                             console.log("pushing a stream")
                             this.streams.push({"stream":event.streams[0], "id":id});
                             console.log("no. of streams", this.streams.length);
-                            let video = <video playsInline autoPlay muted controls ref={vid => vid.srcObject = event.streams[0]} width="100%"></video>;
-                            //video.srcObject = event.streams[0];
+                            let video = <video playsInline autoPlay muted controls ref={vid => {if(vid){vid.srcObject = event.streams[0];}}} width="100%"></video>;
                             console.log("Streams:", this.streams);
                             this.setState({ streamElements: [...this.state.streamElements, <StreamingCard video={video} key={id} />] });
                         }
@@ -120,17 +119,15 @@ class Streams extends Component {
 
         //remove element
         for( let i = 0; i < this.state.streamElements.length; i++){
-
             if ( this.state.streamElements[i].key === id) {
                 console.log("stream removed with id: ",id);
                 this.state.streamElements.splice(i, 1);
-
                 //Update the page to remove the element //Carter
-                //this.setState({streamElements: this.state.streamElements})
                 //this.componentWillUnmount()
             }
-
+            
         }
+        this.setState({streamElements:[...this.state.streamElements]});
         console.log("elements",this.state.streamElements);
         console.log("streams", this.streams)
         console.log("peerConnections", this.peerConnections)
@@ -155,7 +152,7 @@ class Streams extends Component {
                         justifyItems: "center",
                         gap: "45px",
                     }}>
-                        {this.state.streamElements}
+                        {this.state?.streamElements}
                     </div>
                 </article>
             </div>
