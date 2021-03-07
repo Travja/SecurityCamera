@@ -93,15 +93,7 @@ class Streams extends Component {
 
                 this.socket.on("disconnectPeer", (id) => {
                     console.log("remove stream: ",id);
-                    for( let i = 0; i < this.streams.length; i++){
-
-                        if ( this.streams[i]["id"] === id) {
-                            console.log("stream removed with id: ",id);
-                            this.streams.splice(i, 1);
-                        }
-
-                    }
-                    console.log("streams", this.streams)
+                    this.disconnectStream(id);
                 })
 
                 window.onunload = window.onbeforeunload = () => {
@@ -112,6 +104,36 @@ class Streams extends Component {
                 };
             }
         });
+    }
+
+    disconnectStream(id){
+        //delete rtc connection
+        delete this.peerConnections[id];
+
+        //remove stream
+        for( let i = 0; i < this.streams.length; i++){
+            if ( this.streams[i]["id"] === id) {
+                console.log("stream removed with id: ",id);
+                this.streams.splice(i, 1);
+            }
+        }
+
+        //remove element
+        for( let i = 0; i < this.state.streamElements.length; i++){
+
+            if ( this.state.streamElements[i].key === id) {
+                console.log("stream removed with id: ",id);
+                this.state.streamElements.splice(i, 1);
+
+                //Update the page to remove the element //Carter
+                //this.setState({streamElements: this.state.streamElements})
+                //this.componentWillUnmount()
+            }
+
+        }
+        console.log("elements",this.state.streamElements);
+        console.log("streams", this.streams)
+        console.log("peerConnections", this.peerConnections)
     }
 
     componentWillUnmount() {
