@@ -79,10 +79,15 @@ public class SocketIOBroadcasterClient {
 
         System.out.println("Attempting to connect to socket on " + url);
         socket = IO.socket(URI.create(url));
+        ConnectionInformation info = ConnectionInformation.load();
+        SocketIO.roomId = info.getEmail();
 
         socket.connect();
 
-        socket.on("connect", objects -> socket.emit("broadcaster"));
+        socket.on("connect", objects -> {
+            socket.emit("join", connInfo.getEmail());
+            socket.emit("broadcaster");
+        });
         socket.on("answer", SocketIO.answerListener);
         socket.on("watcher", SocketIO.watcherListener);
         socket.on("candidate", SocketIO.candidate);
@@ -138,14 +143,16 @@ public class SocketIOBroadcasterClient {
         if (socket != null)
             socket.close();
 
-        try {
-            Thread.sleep(500);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        System.exit(0); //Lol! This is one way to do it :P
+//        new Thread(() -> {
+//            try {
+//                Thread.sleep(2000);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//            System.exit(0); //Lol! This is one way to do it :P
+//        }).start();
 
-//        vid.dispose();//TODO Crashes here... Not sure why. But it kills the app ¯\_(ツ)_/¯
+        vid.dispose();//TODO Crashes here... Not sure why. But it kills the app ¯\_(ツ)_/¯
     }
 
     /**

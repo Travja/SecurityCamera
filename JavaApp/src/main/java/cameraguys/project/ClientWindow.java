@@ -29,6 +29,7 @@ public class ClientWindow {
     public static final int fps = 10;
     private static final double MIN_AREA = 50;//Disturbance has to be more than this area to be identified.
     private static final String NOTIFY_ENDPOINT = "/api/notify";
+    private static final String VIDEO_ENDPOINT = "/api/upload-recording";
     private static ClientWindow inst;
 
     private final ConnectionInformation connInfo = ConnectionInformation.load();
@@ -56,7 +57,8 @@ public class ClientWindow {
     private long lastGC = System.currentTimeMillis();
 
     private boolean motionDetected = false,
-            sentNotif = false;
+            sentNotif = false,
+            shutdown = false;
 
     public ClientWindow() {
         inst = this;
@@ -78,12 +80,13 @@ public class ClientWindow {
 
             if (System.currentTimeMillis() - initialMotion >= 3000 && lastMotion - initialMotion < 2000) {
                 System.out.println("Deleting useless video.");
-                outFile.delete();
+                if (outFile != null && outFile.exists())
+                    outFile.delete();
             } else {
                 //If there has been motion in the last 10 seconds, process the video.
                 if (System.currentTimeMillis() - lastMotion > TimeUnit.SECONDS.toMillis(10)) {
                     System.out.println("Motion has ceased.");
-                    sendVideoToServer();
+                    sendVideoToServer(outFile);
                 }
             }
             socketio.halt();
@@ -103,6 +106,7 @@ public class ClientWindow {
     /**
      * Takes in a {@link Mat} composed of the difference of two frames
      * and finds contours based on the mat.
+     *
      * @param inputmat The mat to analyze
      * @return A list of Rects where motion was detected.
      */
@@ -160,6 +164,7 @@ public class ClientWindow {
     /**
      * Takes the provided frame and analyzes it with the previous frame to see if there is motion.
      * Displays the rendered Mats in the client window.
+     *
      * @param initialFrame
      */
     /*
@@ -168,6 +173,7 @@ public class ClientWindow {
     as a video, and if the recorded video is even worthwhile.
      */
     public void processFrame(Mat initialFrame) {
+        if (shutdown) return;
         initialFrame.copyTo(displayFrame); //Clone it for display purposes.
         initialFrame.copyTo(processingFrame); //This will be changed based on slider to show progress in filters.
 
@@ -194,7 +200,7 @@ public class ClientWindow {
                 System.out.println("Detected motion. Writing video.");
                 initialMotion = System.currentTimeMillis();
                 System.out.println(DateUtils.formatString(initialMotion));
-                outFile = new File("footage", DateUtils.formatString(initialMotion) + ".mp4");
+                outFile = new File("footage", DateUtils.formatString(initialMotion) + "_" + connInfo.getCameraName() + ".mp4");
             }
 
             motionDetected = true;
@@ -239,7 +245,7 @@ public class ClientWindow {
                 } else {
                     System.out.println("Motion has ceased.");
                     stopVideo();
-                    sendVideoToServer();
+                    sendVideoToServer(outFile);
                 }
             }
         }
@@ -290,11 +296,16 @@ public class ClientWindow {
                 in.close();
                 System.out.println("Saved image. Executing post");
 
-                HashMap<String, String> formData = new HashMap<>();
+                HashMap<String, Object> formData = new HashMap<>();
                 formData.put("name", connInfo.getName());
                 formData.put("userEmail", connInfo.getEmail());
-                HttpFileUpload imgData = new HttpFileUpload(connInfo.getUrl() + NOTIFY_ENDPOINT, file, formData);
-                imgData.uploadImage();
+                HttpFileUpload imgData = new HttpFileUpload(connInfo.getUrl() + NOTIFY_ENDPOINT, "path", file, formData);
+                if (imgData.uploadImage()) {
+                    file.delete(); //Cleanup!
+                    System.out.println("Sent!");
+                } else {
+                    System.err.println("Email notification failed to send. Image will not be deleted.");
+                }
             } catch (IOException e) {
                 System.err.println("Could not send email notification!");
                 e.printStackTrace();
@@ -305,7 +316,11 @@ public class ClientWindow {
 
     public void setClosed() {
 //        stopFrames();
+        shutdown = true;
+        boolean filePending = motionDetected && outFile.exists();
         stopVideo();
+        if (filePending)
+            outFile.delete();
         socketio.kill();
 
 //        if (httpStreamService != null && httpStreamService.isRunning())
@@ -335,10 +350,23 @@ public class ClientWindow {
             writer.release();
     }
 
-    private void sendVideoToServer() {
-        File file = new File(outFile.getAbsolutePath());
+    private void sendVideoToServer(File file) {
         //TODO Actually send it, wait for response, and delete local file.
-        System.out.println("Uploading video....");
+        final long initial = initialMotion;
+        Thread thread = new Thread(() -> {
+            System.out.println("Uploading video....");
+            HashMap<String, Object> formData = new HashMap<>();
+            formData.put("UserID", ConnectionInformation.getId());
+            formData.put("Date", initial);
+            HttpFileUpload imgData = new HttpFileUpload(connInfo.getUrl() + VIDEO_ENDPOINT, "recording", file, formData);
+            if (imgData.uploadImage()) {
+                file.delete(); //Cleanup!
+                System.out.println("Done!");
+            } else {
+                System.err.println("Failed to upload video to server. Video will not be deleted.");
+            }
+        });
+        thread.start();
     }
 
 

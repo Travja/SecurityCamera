@@ -46,7 +46,7 @@ socket.on("watcher", id => {
     //         socket.emit("offer", id, peerConnection.localDescription, roomId);
     //     });
 
-    peerConnection.onnegotiationneeded = () =>{
+    peerConnection.onnegotiationneeded = () => {
         peerConnection.createOffer()
             .then(sdp => peerConnection.setLocalDescription(sdp))
             .then(() => {
@@ -58,7 +58,7 @@ socket.on("watcher", id => {
 socket.on("candidate", (id, candidate, isBroadcast) => {
     if (!isBroadcast) {
         peerConnections[id].addIceCandidate(new RTCIceCandidate(candidate)).catch(e => {
-            if(e)
+            if (e)
                 console.log(e);
         });
     }
@@ -70,9 +70,8 @@ socket.on("disconnectPeer", id => {
 });
 
 window.onunload = window.onbeforeunload = () => {
-    socket.emit("disconnect").then(() => {
-        socket.close();
-    })
+    socket.disconnect();
+    socket.close();
 };
 
 // Get camera and microphone

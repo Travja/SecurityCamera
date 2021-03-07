@@ -21,12 +21,20 @@ import java.util.Map;
 public class SocketIO {
 
     public static Map<String, RTCPeerConnection> peerConnections = new HashMap<>();
+    public static String roomId = "defaultRoomId";
 
     public static Listener answerListener = objects -> {
         try {
             String id = objects[0].toString();
             JSONObject json = (JSONObject) objects[1];
             RTCSessionDescription description = new RTCSessionDescription(RTCSdpType.valueOf(json.getString("type").toUpperCase()), json.getString("sdp"));
+
+            if (peerConnections.containsKey(id)) {
+                RTCPeerConnection conn = peerConnections.get(id);
+                if (conn != null && conn.getRemoteDescription() != null && conn.getRemoteDescription().equals(description))
+                    return;
+            }
+
             peerConnections.get(id).setRemoteDescription(description, new SetSessionDescriptionObserver() {
                 @Override
                 public void onSuccess() {
@@ -44,8 +52,8 @@ public class SocketIO {
     };
 
     public static Listener watcherListener = objects -> {
-
         String id = objects[0].toString();
+        if (peerConnections.containsKey(id)) return;
         System.out.println("Received watcher");
 
         RTCIceServer stunServer = new RTCIceServer();
@@ -69,7 +77,7 @@ public class SocketIO {
                         .put("sdpMLineIndex", rtcIceCandidate.sdpMLineIndex)
                         .put("sdpMid", rtcIceCandidate.sdpMid)
                         .toString();
-                SocketIOBroadcasterClient.getSocket().emit("candidate", id, json);
+                SocketIOBroadcasterClient.getSocket().emit("candidate", id, json, roomId, true);
             } catch (JSONException e) {
                 System.err.println("Could not convert ICE candidate to json.");
             }
@@ -101,7 +109,7 @@ public class SocketIO {
                                     .put("type", peerConnection.getLocalDescription().sdpType.toString().toLowerCase())
                                     .put("sdp", peerConnection.getLocalDescription().sdp)
                                     .toString();
-                            SocketIOBroadcasterClient.getSocket().emit("offer", id, json);
+                            SocketIOBroadcasterClient.getSocket().emit("offer", id, json, roomId);
                             System.out.println("Sent offer.");
                         } catch (JSONException e) {
                             System.err.println("Could not convert to json...");
@@ -126,6 +134,10 @@ public class SocketIO {
     public static Listener disconnectPeer = objects -> {
         String id = objects[0].toString();
         RTCPeerConnection conn = peerConnections.get(id);
+        if (conn == null) {
+            peerConnections.remove(id);
+            return;
+        }
         for (RTCRtpSender sender : conn.getSenders()) {
             conn.removeTrack(sender);
         }
@@ -135,18 +147,24 @@ public class SocketIO {
 
     public static Listener candidate = objects -> {
         try {
-            String id = objects[0].toString();
-            JSONObject json = (JSONObject) objects[1];
-            RTCIceCandidate candidate = new RTCIceCandidate(json.getString("sdpMid"), json.getInt("sdpMLineIndex"), json.getString("candidate"));
-            peerConnections.get(id).addIceCandidate(candidate);
+            boolean isBroadcast = Boolean.parseBoolean(objects[2].toString());
+            if (!isBroadcast) {
+                String id = objects[0].toString();
+                JSONObject json = (JSONObject) objects[1];
+                RTCIceCandidate candidate = new RTCIceCandidate(json.getString("sdpMid"), json.getInt("sdpMLineIndex"), json.getString("candidate"));
+                peerConnections.get(id).addIceCandidate(candidate);
+            }
         } catch (JSONException e) {
             System.err.println("Could not convert candidate to ICE Candidate");
             e.printStackTrace();
         }
     };
 
-
     public static void clearConnections() {
+        if (SocketIOBroadcasterClient.getSocket() != null) {
+            SocketIOBroadcasterClient.getSocket().disconnect();
+            SocketIOBroadcasterClient.getSocket().close();
+        }
         peerConnections.values().forEach(conn -> {
             for (RTCRtpSender sender : conn.getSenders()) {
                 conn.removeTrack(sender);

@@ -1,5 +1,6 @@
 package cameraguys.project;
 
+import cameraguys.project.http.ConnectionInformation;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -16,10 +17,7 @@ import java.nio.file.Path;
 public class CameraApp extends Application {
 
     public static void main(String[] args) {
-        extract("opencv_java3413.dll");
-
-        System.load(new File("lib", "opencv_java3413.dll").getAbsolutePath());
-        System.out.println("Loaded OpenCV");
+        System.out.println("Starting application. If this is all you see.... I have no idea what's wrong.");
         launch(args);
     }
 
@@ -38,42 +36,56 @@ public class CameraApp extends Application {
     }
 
     public static void openCameraWindow(Stage primaryStage) {
-
         try {
-            FXMLLoader loader = new FXMLLoader(CameraApp.class.getClassLoader().getResource("ClientWindow.fxml"));
-            GridPane root = loader.load();
-            ClientWindow controller = loader.getController();
+            ConnectionInformation info = ConnectionInformation.load();
+            boolean connected = ConnectionInformation.testConnection(info.getUrl(), info.getEmail(), info.getPassword(), false);
 
-            Scene scene = new Scene(root);
-            primaryStage.setTitle("Camera App");
-            primaryStage.setScene(scene);
+            extract("opencv_java3413.dll");
 
-            primaryStage.setOnCloseRequest(we -> controller.setClosed());
+            System.load(new File("lib", "opencv_java3413.dll").getAbsolutePath());
+            System.out.println("Loaded OpenCV");
+
+            if (connected) {
+                FXMLLoader loader = new FXMLLoader(CameraApp.class.getClassLoader().getResource("ClientWindow.fxml"));
+                GridPane root = loader.load();
+                ClientWindow controller = loader.getController();
+
+                Scene scene = new Scene(root);
+                primaryStage.setTitle("Camera App");
+                primaryStage.setScene(scene);
+
+                primaryStage.setOnCloseRequest(we -> controller.setClosed());
+                primaryStage.show();
+            } else {
+                showConfigurationWindow(primaryStage);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void showConfigurationWindow(Stage primaryStage) {
+        try {
+            FXMLLoader confLoader = new FXMLLoader(CameraApp.class.getClassLoader().getResource("ConfigurationWindow.fxml"));
+            Parent confRoot = confLoader.load();
+
+            primaryStage.setTitle("Configure Your Camera!");
+            primaryStage.setScene(new Scene(confRoot));
+            System.out.println("Showing configuration window");
             primaryStage.show();
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 
     @Override
     public void start(Stage primaryStage) {
-        System.out.println("Hello?");
-        try {
-            if (!new File("server.conf").exists()) {
-                System.out.println("Server configuration doesn't exist.");
-                FXMLLoader confLoader = new FXMLLoader(getClass().getClassLoader().getResource("ConfigurationWindow.fxml"));
-                Parent confRoot = confLoader.load();
-
-                primaryStage.setTitle("Configure Your Camera!");
-                primaryStage.setScene(new Scene(confRoot));
-                System.out.println("Showing configuration window");
-                primaryStage.show();
-            } else {
-                openCameraWindow(primaryStage);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+        if (!new File("server.conf").exists()) {
+            System.out.println("Server configuration doesn't exist.");
+            showConfigurationWindow(primaryStage);
+        } else {
+            System.out.println("Opening camera window");
+            openCameraWindow(primaryStage);
         }
     }
 }

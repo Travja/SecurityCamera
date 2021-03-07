@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import okhttp3.*;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -47,7 +49,16 @@ public class HttpAuthenticate {
                 .build();
 
         Response response = client.newCall(body).execute();
-        System.out.println(response.body().string());
-        return response.code() == 200;
+        String resBody = response.body().string();
+        try {
+            JSONObject ret = new JSONObject(resBody);
+            ConnectionInformation.setId(ret.getInt("UserID"));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        boolean success = response.code() == 200;
+        response.body().close();
+        response.close();
+        return success;
     }
 }

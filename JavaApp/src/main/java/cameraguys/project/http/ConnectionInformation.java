@@ -1,5 +1,6 @@
 package cameraguys.project.http;
 
+import javafx.scene.control.Alert;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -16,6 +17,10 @@ public class ConnectionInformation {
 
     @Getter
     @Setter
+    public static int id;
+    private static ConnectionInformation info;
+    @Getter
+    @Setter
     private String name,
             email,
             password,
@@ -28,6 +33,9 @@ public class ConnectionInformation {
      * @return {@link ConnectionInformation}
      */
     public static ConnectionInformation load() {
+        if (info != null)
+            return info;
+
         ConnectionInformation conn = new ConnectionInformation();
         try (BufferedReader reader = new BufferedReader(new FileReader(new File("server.conf")))) {
             conn.setName(reader.readLine());
@@ -35,12 +43,47 @@ public class ConnectionInformation {
             conn.setPassword(reader.readLine());
             conn.setUrl(reader.readLine());
             conn.setCameraName(reader.readLine());
+            info = conn;
             return conn;
         } catch (IOException e) {
             System.err.println("Could not read server configuration");
             e.printStackTrace();
             return null;
         }
+    }
+
+    public static void purge() {
+        info = null;
+    }
+
+    public static boolean testConnection(String server, String email, String password, boolean showSuccess) {
+        boolean connected = false;
+        try {
+            connected = new HttpAuthenticate(server + "/api/login", email, password).authenticate();
+
+            if (connected) {
+                if (showSuccess) {
+                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                    alert.setHeaderText("Connection successful!");
+                    alert.setContentText("You're good to go! The connection succeeded!");
+                    alert.showAndWait();
+                }
+            } else {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setHeaderText("Could not connect");
+                alert.setContentText("Authentication failed.");
+                alert.showAndWait();
+            }
+        } catch (IOException e) {
+            System.err.println("Could not execute auth check: " + e.getCause());
+            e.printStackTrace();
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setHeaderText("Could not connect");
+            alert.setContentText("Could not establish a connection to the server.");
+            alert.showAndWait();
+        }
+
+        return connected;
     }
 
     public static URL getFinalURL(URL url) {
