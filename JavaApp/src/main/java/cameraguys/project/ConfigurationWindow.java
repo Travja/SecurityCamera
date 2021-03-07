@@ -1,10 +1,9 @@
 package cameraguys.project;
 
-import cameraguys.project.http.HttpAuthenticate;
+import cameraguys.project.http.ConnectionInformation;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
-import javafx.scene.control.Alert;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
@@ -23,38 +22,21 @@ public class ConfigurationWindow {
 
     @FXML
     public boolean testConnection(ActionEvent actionEvent) {
-        //TODO Test the connection
-        boolean connected = false;
-        try {
-            connected = new HttpAuthenticate(serverField.getText() + "/api/login", emailField.getText(), passwordField.getText()).authenticate();
+        String email = emailField.getText();
+        String password = passwordField.getText();
+        String server = serverField.getText();
 
-            if (connected) {
-                Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                alert.setHeaderText("Connection successful!");
-                alert.setContentText("You're good to go! The connection succeeded!");
-                alert.showAndWait();
-            } else {
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setHeaderText("Could not connect");
-                alert.setContentText("Authentication failed.");
-                alert.showAndWait();
-            }
-        } catch (IOException e) {
-            System.err.println("Could not execute auth check: " + e.getCause());
-            e.printStackTrace();
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setHeaderText("Could not connect");
-            alert.setContentText("Could not establish a connection to the server.");
-            alert.showAndWait();
-        }
-
-        return connected;
+        return ConnectionInformation.testConnection(server, email, password, true);
     }
 
     @FXML
     public void apply(ActionEvent actionEvent) {
 
         if (testConnection(actionEvent)) {
+            File file = new File("server.conf");
+            ConnectionInformation.purge();
+            if (file.exists())
+                file.delete();
             try (FileWriter writer = new FileWriter(new File("server.conf"))) {
                 System.out.println(nameField);
                 writer.write(nameField.getText() + "\n");

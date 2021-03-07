@@ -16,18 +16,19 @@ public class HttpFileUpload {
 
     @Getter
     @Setter
-    private String url;
+    private String url,
+    formName;
     @Getter
     @Setter
     private File file;
     @Getter
     @Setter
-    private HashMap<String, String> formData;
+    private HashMap<String, Object> formData;
 
     /**
      * Sends an email to the current user with the attached file.
      */
-    private void okSendRequest() {
+    private boolean okSendRequest() {
         ConnectionInformation info = ConnectionInformation.load();
 
         if (!url.startsWith("http"))
@@ -44,9 +45,9 @@ public class HttpFileUpload {
                 .build();
         MultipartBody.Builder builder = new MultipartBody.Builder().setType(MultipartBody.FORM);
 
-        formData.keySet().forEach(key -> builder.addFormDataPart(key, formData.get(key)));
+        formData.keySet().forEach(key -> builder.addFormDataPart(key, formData.get(key).toString()));
 
-        builder.addFormDataPart("path", file.getAbsolutePath(),
+        builder.addFormDataPart(formName, file.getAbsolutePath(),
                 RequestBody.create(MediaType.parse("application/octet-stream"),
                         file));
         MultipartBody body = builder.build();
@@ -56,22 +57,23 @@ public class HttpFileUpload {
                 .build();
         try {
             Response response = client.newCall(request).execute();
-            if (response.isSuccessful()) {
-                file.delete(); //Cleanup!
-            } else {
-                System.err.println("Email notification failed to send. Image will not be deleted.");
+            if (!response.isSuccessful()) {
+                System.err.println("File upload failed: " + response.code() + ". " + response.body().string());
             }
+            return response.isSuccessful();
         } catch (IOException e) {
-            System.err.println("Email notification failed to send. Image will not be deleted.");
+            System.err.println("Could not upload file!");
             e.printStackTrace();
         }
+
+        return false;
     }
 
     /**
      * Uploads the image and sends it in an email to the user.
      */
-    public void uploadImage() {
-        okSendRequest();
+    public boolean uploadImage() {
+        return okSendRequest();
     }
 
 }

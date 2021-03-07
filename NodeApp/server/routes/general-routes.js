@@ -3,11 +3,11 @@ import CameraRoutes from "../routes/camera-routes.js";
 import AccountRoutes from "../routes/account-routes.js";
 import NotificationRoutes from "../routes/notification-controller.js";
 import multer from "multer";
-import { useSql } from "../configurations/SQLConfig.js";
+import {useSql} from "../configurations/SQLConfig.js";
 import fs from "fs";
 
 
-const { ERequestType } = pkg;
+const {ERequestType} = pkg;
 let storage = multer.diskStorage({
     destination: (req, file, cb) => {
         fs.mkdirSync("./uploads/recordings/", {recursive: true});
@@ -28,36 +28,38 @@ let upload = multer({storage: storage});
  * @type {import("dobject-routing").IRouter}
  */
 const general_routes = {
-  /**
-   * Does nothing but set
-   * the route formatting example
-   */
-  routes: [
-    {
-      method: ERequestType.GET,
-      handlers: [
-        (_req, res) => {
-          res.send("Hello");
-        }
-      ],
-      routes: [...CameraRoutes, ...AccountRoutes, ...NotificationRoutes],
-    },
-    {
-      url: "/upload-recording",
-      method: ERequestType.POST,
-      handlers: [
-        upload.single('recording'),
-        async (req, res) => {
-            if(req.file) {
-                let request = await (await useSql()).request();
-                await request.query`insert into Recording (RecordingDate, UserID, BlobURL) values (${req.body.Date}, ${req.body.UserID}, ${'/uploads/recordings/'+req.file.filename});`;
-                res.sendStatus(200);
-            }
+    /**
+     * Does nothing but set
+     * the route formatting example
+     */
+    routes: [
+        {
+            method: ERequestType.GET,
+            handlers: [
+                (_req, res) => {
+                    res.send("Hello");
+                }
+            ],
+            routes: [...CameraRoutes, ...AccountRoutes, ...NotificationRoutes],
         },
-      ],
-    },
-  ],
-  routers: [],
+        {
+            url: "/upload-recording",
+            method: ERequestType.POST,
+            handlers: [
+                upload.single('recording'),
+                async (req, res) => {
+                    if (req.file) {
+                        let request = await (await useSql()).request();
+                        let millis = Number(req.body.Date);
+                        let date = new Date(millis);
+                        await request.query`insert into Recording (RecordingDate, UserID, BlobURL) values (${date}, ${req.body.UserID}, ${'/uploads/recordings/' + req.file.filename});`;
+                        res.sendStatus(200);
+                    }
+                },
+            ],
+        },
+    ],
+    routers: [],
 };
 
 export default general_routes;
