@@ -40,10 +40,10 @@ class Recordings extends Component {
               console.log(recording);
             return (
               <RecordingCard
-                title={new Date().toString()}
+                title={new Date(recording.RecordingDate).toString()}
                 download={(process.env.REACT_APP_API_URL ? process.env.REACT_APP_API_URL : "") + recording.BlobURL}
                 save={recording.title}
-                key={new Date().toString()}
+                key={new Date(recording.RecordingDate).toString()}
               >
                 <video src={(process.env.REACT_APP_API_URL ? process.env.REACT_APP_API_URL : "") + recording.BlobURL} width="100%" height="100%" />
               </RecordingCard>
