@@ -70,8 +70,9 @@ socket.on("disconnectPeer", id => {
 });
 
 window.onunload = window.onbeforeunload = () => {
-    socket.emit("disconnect", roomId)
-    socket.close();
+    socket.emit("disconnect").then(() => {
+        socket.close();
+    })
 };
 
 // Get camera and microphone

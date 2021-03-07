@@ -72,22 +72,28 @@ if (NODE_ENV === "production") {
     });
 }
 
-let broadcaster;
 const http = httpServer.createServer(app);
 const io = new Server(http);
+
+let socketsRoom = {};
 
 io.sockets.on("error", e => console.log(e));
 io.sockets.on("connection", socket => {
 
     socket.on('join', (roomId) => {
+
         console.log(`Joining room ${roomId} and emitting room_joined socket event`);
         socket.join(roomId);
+
+        if (socketsRoom[socket.id]) return;
+
+        console.log("socket added to the list");
+        socketsRoom[socket.id] = roomId;
+        console.log(socketsRoom);
     });
 
     socket.on("broadcaster", (roomId) => {
-        broadcaster = socket.id;
-        console.log("Got broadcaster");
-        console.log(broadcaster);
+        console.log("Broadcaster: ", socket.id);
         socket.to(roomId).emit("broadcaster");
     });
 
@@ -105,8 +111,9 @@ io.sockets.on("connection", socket => {
        // console.log("Got candidate");
         socket.to(id).emit("candidate", socket.id, message, isBroadcaster);
     });
-    socket.on("disconnect", (roomId) => {
-        console.log("disconnect from room:", roomId);
+    socket.on("disconnect", () => {
+        const roomId = socketsRoom[socket.id] || "";
+        console.log("disconnect from room: ", roomId);
         socket.to(roomId).emit("disconnectPeer", socket.id);
     });
 });
