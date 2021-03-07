@@ -82,7 +82,10 @@ public class SocketIOBroadcasterClient {
 
         socket.connect();
 
-        socket.on("connect", objects -> socket.emit("broadcaster"));
+        socket.on("connect", objects -> {
+            socket.emit("join", connInfo.getEmail());
+            socket.emit("broadcaster");
+        });
         socket.on("answer", SocketIO.answerListener);
         socket.on("watcher", SocketIO.watcherListener);
         socket.on("candidate", SocketIO.candidate);
