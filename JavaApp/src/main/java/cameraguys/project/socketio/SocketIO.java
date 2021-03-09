@@ -60,7 +60,7 @@ public class SocketIO {
         stunServer.urls.add("stun:stunserver.org:3478");
 
         RTCIceServer turnServer = new RTCIceServer();
-        turnServer.urls.add("stun:stunserver.org:3478");
+        turnServer.urls.add("turn:numb.viagenie.ca");
         turnServer.username = "ypatel@student.neumont.edu";
         turnServer.password = "Camera24";
 
