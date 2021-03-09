@@ -9,10 +9,10 @@ const styles = theme => ({
     root: {
         minWidth: 275,
         '& .MuiTextField-root': {
-          margin: theme.spacing(1),
-          marginLeft: theme.spacing(0),
-          marginRight: theme.spacing(0),
-          width: '100%',
+            margin: theme.spacing(1),
+            marginLeft: theme.spacing(0),
+            marginRight: theme.spacing(0),
+            width: '100%',
         }
     },
     bullet: {
@@ -44,6 +44,7 @@ class Login extends Component {
         const login = (e) => {
             e.preventDefault();
             console.log("called", { password, email });
+            email = email.toLowerCase();
             AccountAPI.login({ password, email }, (err) => {
                 if (err) {
                     console.log("error", err.error);
@@ -63,7 +64,7 @@ class Login extends Component {
                         </CardContent>
                         <CardActions>
                             <Button variant="contained" color="primary" onClick={login}>Login</Button>
-                            <NavLink exact to="/register" style={{textDecoration: "none"}}><Button>Register</Button></NavLink>
+                            <NavLink exact to="/register" style={{ textDecoration: "none" }}><Button>Register</Button></NavLink>
                         </CardActions>
                     </form>
                 </Card>

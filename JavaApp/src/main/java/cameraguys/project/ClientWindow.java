@@ -190,6 +190,8 @@ public class ClientWindow {
         Core.subtract(initialFrame, diffFrame, diffFrame); //Subtract the previous frame from the current frame.
         if (((int) slider.getValue()) == 2) diffFrame.copyTo(processingFrame);
 
+        //Basically increases the contrast of the image, producing a more solid black/white image.
+        //See: https://docs.opencv.org/3.4/d7/d4d/tutorial_py_thresholding.html
         Imgproc.adaptiveThreshold(diffFrame, diffFrame, 255, Imgproc.ADAPTIVE_THRESH_MEAN_C, Imgproc.THRESH_BINARY_INV, 5, 2);
         if (((int) slider.getValue()) == 3) diffFrame.copyTo(processingFrame);
 
@@ -252,11 +254,13 @@ public class ClientWindow {
 
 //        httpStreamService.imag = displayFrame;
         ByteArrayInputStream bin = new ByteArrayInputStream(buffer.toArray());
-        ByteArrayInputStream bin2 = new ByteArrayInputStream(buf2.toArray());
         Image img1 = new Image(bin);
-        Image img2 = new Image(bin2);
         currentFrame.setImage(img1);
+
+        ByteArrayInputStream bin2 = new ByteArrayInputStream(buf2.toArray());
+        Image img2 = new Image(bin2);
         filters.setImage(img2);
+
         initialFrame.copyTo(diffFrame); //Update diffFrame
         try {
             bin.close();

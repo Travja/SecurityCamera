@@ -141,16 +141,16 @@ public class SocketIOBroadcasterClient {
         if (socket != null)
             socket.close();
 
-//        new Thread(() -> {
-//            try {
-//                Thread.sleep(2000);
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
-//            System.exit(0); //Lol! This is one way to do it :P
-//        }).start();
+        new Thread(() -> {
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            System.exit(0); //Lol! This is one way to do it :P
+        }).start();
 
-        vid.dispose();//TODO Crashes here... Not sure why. But it kills the app ¯\_(ツ)_/¯
+//        vid.dispose();//TODO Crashes here... Not sure why. But it kills the app ¯\_(ツ)_/¯
     }
 
     /**

@@ -1,11 +1,12 @@
 import sql from "mssql";
-import {DB_DATASOURCE, DB_PASS, DB_PORT, DB_URL, DB_USER} from "../keys.js";
+import { DB_DATASOURCE, DB_PASS, DB_PORT, DB_URL, DB_USER } from "../keys.js";
 
-const {ConnectionPool} = sql;
+const { ConnectionPool } = sql;
 
 let pool;
 
 /**
+ * Creates a connection to the MSSQL Database
  * @returns {ConnectionPool}
  */
 export const useSql = async () => {
@@ -36,6 +37,9 @@ export default class SQLConfig {
         this.InitDb();
     }
 
+    /**
+     * Creates the needed tables for the application.
+     */
     async InitDb() {
         const request = await (await useSql()).request();
         if (pool && pool._connected && request) {

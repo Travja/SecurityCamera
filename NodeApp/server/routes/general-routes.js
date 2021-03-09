@@ -3,21 +3,21 @@ import CameraRoutes from "../routes/camera-routes.js";
 import AccountRoutes from "../routes/account-routes.js";
 import NotificationRoutes from "../routes/notification-controller.js";
 import multer from "multer";
-import {useSql} from "../configurations/SQLConfig.js";
+import { useSql } from "../configurations/SQLConfig.js";
 import fs from "fs";
 
 
-const {ERequestType} = pkg;
+const { ERequestType } = pkg;
 let storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        fs.mkdirSync("./uploads/recordings/", {recursive: true});
+        fs.mkdirSync("./uploads/recordings/", { recursive: true });
         cb(null, './uploads/recordings/')
     },
     filename: (req, file, cb) => {
         cb(null, file.originalname);
     }
 });
-let upload = multer({storage: storage});
+let upload = multer({ storage: storage });
 /**
  * general route objects as an array
  * (Make ANY other routes their own files as this structure.)
@@ -42,6 +42,9 @@ const general_routes = {
             ],
             routes: [...CameraRoutes, ...AccountRoutes, ...NotificationRoutes],
         },
+        /**
+         * Place for uploading video
+         */
         {
             url: "/upload-recording",
             method: ERequestType.POST,

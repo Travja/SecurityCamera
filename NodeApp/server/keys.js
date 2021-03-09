@@ -2,7 +2,18 @@
 import dotenv from "dotenv";
 const { config } = dotenv;
 config();
-// environment variables
+/**
+ * Environment Variables
+ * PORT: Port of the Web Server
+ * DB_USER: Username of the MSSQL User
+ * DB_PASS: Password of the MSSQL User
+ * DB_URL: The URL of the MSSQL Server
+ * DB_DATASOURCE: The name of the database that is being used default is localhost
+ * DB_PORT: The port the database is running off default is 1433
+ * NODE_ENV: The current node enviroment
+ * ACCESS_TOKEN_SECRET: The token secret
+ * REFESH_TOKEN_SECRET: The secret for the refesh token
+ */
 export const PORT = process.env.SERVER_PORT;
 export const DB_USER = process.env.DB_USER;
 export const DB_PASS = process.env.DB_PASS;

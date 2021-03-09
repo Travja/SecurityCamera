@@ -42,7 +42,7 @@ class Streams extends Component {
             if (err) console.log("No account");
             if (account) {
                 this.setState({ account: account });
-                this.roomId = this.state.account.Email;
+                this.roomId = this.state.account.Email.toLowerCase();
                 this.mounted = true;
                 this.socket = io.connect();
                 this.socket.on("offer", (id, description) => {
@@ -67,9 +67,9 @@ class Streams extends Component {
                         if (event.track.kind == "video") {
                             console.log("trackEvent", event);
                             console.log("pushing a stream")
-                            this.streams.push({"stream":event.streams[0], "id":id});
+                            this.streams.push({ "stream": event.streams[0], "id": id });
                             console.log("no. of streams", this.streams.length);
-                            let video = <video playsInline autoPlay muted controls ref={vid => {if(vid){vid.srcObject = event.streams[0];}}} width="100%"></video>;
+                            let video = <video playsInline autoPlay muted controls ref={vid => { if (vid) { vid.srcObject = event.streams[0]; } }} width="100%"></video>;
                             console.log("Streams:", this.streams);
                             console.log("Camera names", this.cameraNames);
                             this.setState({ streamElements: [...this.state.streamElements, <StreamingCard video={video} key={id} title={this.cameraNames[id]}/>] });
@@ -95,7 +95,7 @@ class Streams extends Component {
                 });
 
                 this.socket.on("disconnectPeer", (id) => {
-                    console.log("remove stream: ",id);
+                    console.log("remove stream: ", id);
                     this.disconnectStream(id);
                 })
 
@@ -109,30 +109,30 @@ class Streams extends Component {
         });
     }
 
-    disconnectStream(id){
+    disconnectStream(id) {
         //delete rtc connection
         delete this.peerConnections[id];
 
         //remove stream
-        for( let i = 0; i < this.streams.length; i++){
-            if ( this.streams[i]["id"] === id) {
-                console.log("stream removed with id: ",id);
+        for (let i = 0; i < this.streams.length; i++) {
+            if (this.streams[i]["id"] === id) {
+                console.log("stream removed with id: ", id);
                 this.streams.splice(i, 1);
             }
         }
 
         //remove element
-        for( let i = 0; i < this.state.streamElements.length; i++){
-            if ( this.state.streamElements[i].key === id) {
-                console.log("stream removed with id: ",id);
+        for (let i = 0; i < this.state.streamElements.length; i++) {
+            if (this.state.streamElements[i].key === id) {
+                console.log("stream removed with id: ", id);
                 this.state.streamElements.splice(i, 1);
                 //Update the page to remove the element //Carter
                 //this.componentWillUnmount()
             }
 
         }
-        this.setState({streamElements:[...this.state.streamElements]});
-        console.log("elements",this.state.streamElements);
+        this.setState({ streamElements: [...this.state.streamElements] });
+        console.log("elements", this.state.streamElements);
         console.log("streams", this.streams)
         console.log("peerConnections", this.peerConnections)
     }
