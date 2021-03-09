@@ -35,7 +35,7 @@ export const authenticateUser = (req, res, next) => {
 /**
  * Generates the JWT token
  * @param {Object} user user object
- */cs
+ */
 export const generateAccessToken = (user) => {
     return sign(user, ACCESS_TOKEN_SECRET, { expiresIn: "120s" });
 };
