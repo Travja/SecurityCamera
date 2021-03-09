@@ -43,9 +43,8 @@ class Login extends Component {
 
         const login = (e) => {
             e.preventDefault();
-            console.log("called", { password, email });
-            email = email.toLowerCase();
-            AccountAPI.login({ password, email }, (err) => {
+            let emailL =  email.toLowerCase();
+            AccountAPI.login({ password, email:emailL }, (err) => {
                 if (err) {
                     console.log("error", err.error);
                 } else {

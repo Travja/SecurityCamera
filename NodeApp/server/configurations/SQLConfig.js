@@ -47,7 +47,7 @@ export default class SQLConfig {
             WHERE object_id = OBJECT_ID(N'[dbo].[User]') AND type in (N'U')) BEGIN
                 CREATE TABLE [User] (
                     UserID INT PRIMARY KEY IDENTITY(1,1),
-                    Email VARCHAR(2048),
+                    Email VARCHAR(2048) UNIQUE,
                     Name VARCHAR(2048),
                     [Hash] VARCHAR(2048),
                     Picture VARCHAR(2048)
