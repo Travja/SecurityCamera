@@ -62,7 +62,7 @@ public class SocketIO {
         RTCIceServer turnServer = new RTCIceServer();
         turnServer.urls.add("stun:stunserver.org:3478");
         turnServer.username = "ypatel@student.neumont.edu";
-        turnServer.password = "Camera_yp";
+        turnServer.password = "Camera24";
 
 
         RTCConfiguration config = new RTCConfiguration();
