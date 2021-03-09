@@ -8,7 +8,8 @@ const { ERequestType } = pkg;
  */
 const recording_routes = [
     /**
-     * Get a single stream
+     * Get a single recording
+     * @type {import("dobject-routing").IRoute}
      */
     {
         url: "/recordings/:id",
@@ -31,6 +32,7 @@ const recording_routes = [
     },
     /**
      * Get all the recordings
+     * @type {import("dobject-routing").IRoute}
      */
     {
         url: "/recordings",
@@ -49,7 +51,7 @@ const recording_routes = [
         ],
     },
     /**
-     * Create a new stream.
+     * Create a new recording.
      * @type {import("dobject-routing").IRoute}
      */
     {
@@ -65,7 +67,7 @@ const recording_routes = [
         ],
     },
     /**
-     * Update a stream
+     * Update a recording
      * @type {import("dobject-routing").IRoute}
      */
     {
@@ -81,7 +83,7 @@ const recording_routes = [
         ],
     },
     /**
-     * Remove a stream
+     * Remove a recording
      * @type {import("dobject-routing").IRoute}
      */
     {

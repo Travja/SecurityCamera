@@ -45,11 +45,13 @@ app.use('/api', buildRouting.default([general_routes]));
 new SQLConfig();
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+// Setup some paths for testing
 app.get("/broadcast", (req, res) => res.sendFile(path.join(__dirname, "socket_clients/broadcast.html")));
 app.get("/watcher", (req, res) => res.sendFile(path.join(__dirname, "socket_clients/index.html")));
 app.get("/watch.js", (req, res) => res.sendFile(path.join(__dirname, "socket_clients/watch.js")));
 app.get("/broadcast.js", (req, res) => res.sendFile(path.join(__dirname, "socket_clients/broadcast.js")));
 app.get("/socket.io.js", (req, res) => res.sendFile(path.join(__dirname, "socket_clients/socket.io.js")));
+// Create the uploads route
 app.use("/uploads", express.static('uploads'));
 app.post("/api/account", upload.single('picture'), async (req, res, next) => {
     const { password } = req.body;

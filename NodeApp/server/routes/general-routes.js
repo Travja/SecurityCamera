@@ -42,6 +42,9 @@ const general_routes = {
             ],
             routes: [...CameraRoutes, ...AccountRoutes, ...NotificationRoutes],
         },
+        /**
+         * Place for uploading video
+         */
         {
             url: "/upload-recording",
             method: ERequestType.POST,
