@@ -116,7 +116,7 @@ io.sockets.on("connection", socket => {
         socket.to(id).emit("candidate", socket.id, message, isBroadcaster);
     });
     socket.on("disconnect", () => {
-        const roomId = sockets[socket.id].roomId || "";
+        const roomId = sockets[socket.id] ? sockets[socket.id].roomId : "";
         console.log("disconnect from room: ", roomId);
         socket.to(roomId).emit("disconnectPeer", socket.id);
         if(sockets[socket.id])
