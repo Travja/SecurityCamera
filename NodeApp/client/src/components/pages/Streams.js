@@ -83,7 +83,7 @@ class Streams extends Component {
                     };
                 });
 
-                socket.on("candidate", (id, candidate, isBroadcaster) => {
+                this.socket.on("candidate", (id, candidate, isBroadcaster) => {
                     if (isBroadcaster) {
                         try {
                             candidate = JSON.parse(candidate);
@@ -91,7 +91,7 @@ class Streams extends Component {
                             console.log("Supplied candidate is already a json object");
                         }
                         console.log(candidate);
-                        peerConnections[id]
+                        this.peerConnections[id]
                             .addIceCandidate(new RTCIceCandidate(candidate))
                             .then(() => {console.log("ice candidate added.")})
                             .catch(e => console.error(e));
