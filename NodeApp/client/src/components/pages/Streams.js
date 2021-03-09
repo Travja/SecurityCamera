@@ -17,7 +17,7 @@ class Streams extends Component {
                 urls: 'stun:stunserver.org:3478'
             },
             {
-                url: REACT_APP_TURN_URL,
+                url: process.env.REACT_APP_TURN_URL,
                 username: process.env.REACT_APP_TURN_USERNAME,
                 credential: process.env.REACT_APP_TURN_CREDENTIAL
             }
