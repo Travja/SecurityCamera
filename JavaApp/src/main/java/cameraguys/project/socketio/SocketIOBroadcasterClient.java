@@ -83,8 +83,10 @@ public class SocketIOBroadcasterClient {
         socket.connect();
 
         socket.on("connect", objects -> {
-            socket.emit("join", connInfo.getEmail(), connInfo.getCameraName());
-            socket.emit("broadcaster", connInfo.getEmail(), connInfo.getCameraName());
+//            socket.emit("join", connInfo.getEmail(), connInfo.getCameraName());
+//            socket.emit("broadcaster", connInfo.getEmail(), connInfo.getCameraName());
+            socket.emit("join", connInfo.getEmail());
+            socket.emit("broadcaster");
         });
         socket.on("answer", SocketIO.answerListener);
         socket.on("watcher", SocketIO.watcherListener);
