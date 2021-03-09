@@ -19,7 +19,7 @@ class Streams extends Component {
             {
                 url: 'turn:numb.viagenie.ca',
                 username: 'ypatel@student.neumont.edu',
-                credential: 'Camera_yp'
+                credential: 'Camera24'
             }
         ]
     };
