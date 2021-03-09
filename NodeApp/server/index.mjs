@@ -119,8 +119,8 @@ io.sockets.on("connection", socket => {
         const roomId = sockets[socket.id].roomId || "";
         console.log("disconnect from room: ", roomId);
         socket.to(roomId).emit("disconnectPeer", socket.id);
-        if(socketsRoom[socket.id])
-            delete socketsRoom[socket.id];
+        if(sockets[socket.id])
+            delete sockets[socket.id];
     });
 });
 // start to listen
