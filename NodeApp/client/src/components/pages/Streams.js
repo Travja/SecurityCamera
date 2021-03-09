@@ -83,6 +83,21 @@ class Streams extends Component {
                     };
                 });
 
+                socket.on("candidate", (id, candidate, isBroadcaster) => {
+                    if (isBroadcaster) {
+                        try {
+                            candidate = JSON.parse(candidate);
+                        } catch (e) {
+                            console.log("Supplied candidate is already a json object");
+                        }
+                        console.log(candidate);
+                        peerConnections[id]
+                            .addIceCandidate(new RTCIceCandidate(candidate))
+                            .then(() => {console.log("ice candidate added.")})
+                            .catch(e => console.error(e));
+                    }
+                });
+
                 this.socket.on("connect", () => {
                     this.socket.emit("join", this.roomId);
                     this.socket.emit("watcher", this.roomId);
