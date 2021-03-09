@@ -45,7 +45,7 @@ class Streams extends Component {
                 this.roomId = this.state.account.Email.toLowerCase();
                 this.mounted = true;
                 this.socket = io.connect();
-                this.socket.on("offer", (id, description) => {
+                this.socket.on("offer", (id, description, cameraName) => {
                     if (this.peerConnections[id]) return;
 
                     this.peerConnections[id] = new RTCPeerConnection(this.config);
@@ -72,7 +72,7 @@ class Streams extends Component {
                             let video = <video playsInline autoPlay muted controls ref={vid => { if (vid) { vid.srcObject = event.streams[0]; } }} width="100%"></video>;
                             console.log("Streams:", this.streams);
                             console.log("Camera names", this.cameraNames);
-                            this.setState({ streamElements: [...this.state.streamElements, <StreamingCard video={video} key={id} title={this.cameraNames[id]}/>] });
+                            this.setState({ streamElements: [...this.state.streamElements, <StreamingCard video={video} key={id} title={cameraName}/>] });
                             console.log("stream key", id);
                         }
                     };
