@@ -19,28 +19,28 @@ const Settings = lazy(() => import("./components/pages/Settings"));
 const Register = lazy(() => import("./components/pages/Register"));
 
 function App() {
-  axios.defaults.baseURL = process.env.REACT_APP_API_URL
-    ? process.env.REACT_APP_API_URL
-    : "";
-  return (
-    <ErrorBoundary>
-      <Router>
-        <Suspense {...fallback}>
-          <Drawer />
-          <div style={{ marginLeft: "100px" }}>
-            <Switch>
-              <Route exact path="/" component={Home} />
-              <Route exact path="/login" component={Login} />
-              <Route exact path="/register" component={Register}/>
-              <ProtectedRoute exact path="/streams" component={Streams} />
-              <ProtectedRoute exact path="/recordings" component={Recordings} />
-              <ProtectedRoute exact path="/settings" component={Settings} />
-            </Switch>
-          </div>
-        </Suspense>
-      </Router>
-    </ErrorBoundary>
-  );
+    axios.defaults.baseURL = process.env.REACT_APP_API_URL
+        ? process.env.REACT_APP_API_URL
+        : "";
+    return (
+        <ErrorBoundary>
+            <Router>
+                <Suspense {...fallback}>
+                    <Drawer />
+                    <div style={{ marginLeft: "100px" }}>
+                        <Switch>
+                            <Route exact path="/" component={Home} />
+                            <Route exact path="/login" component={Login} />
+                            <Route exact path="/register" component={Register} />
+                            <ProtectedRoute exact path="/streams" component={Streams} />
+                            <ProtectedRoute exact path="/recordings" component={Recordings} />
+                            <ProtectedRoute exact path="/settings" component={Settings} />
+                        </Switch>
+                    </div>
+                </Suspense>
+            </Router>
+        </ErrorBoundary>
+    );
 }
 
 export default App;

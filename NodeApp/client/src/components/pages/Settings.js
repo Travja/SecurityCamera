@@ -11,10 +11,10 @@ const styles = theme => ({
     root: {
         minWidth: 275,
         '& .MuiTextField-root': {
-          margin: theme.spacing(1),
-          marginLeft: theme.spacing(0),
-          marginRight: theme.spacing(0),
-          width: '100%',
+            margin: theme.spacing(1),
+            marginLeft: theme.spacing(0),
+            marginRight: theme.spacing(0),
+            width: '100%',
         }
     },
     bullet: {
@@ -52,9 +52,9 @@ class Settings extends Component {
         this.mounted = false;
     }
 
-    async updateUser () {
+    async updateUser() {
         console.log(this.state);
-        await axios.put("/api/account", {Name: this.state.Name, Password: this.state.Password}, {headers: { Authorization: `Bearer ${await ls.get(T_VAR)}` }});
+        await axios.put("/api/account", { Name: this.state.Name, Password: this.state.Password }, { headers: { Authorization: `Bearer ${await ls.get(T_VAR)}` } });
         AccountAPI.login({ password: this.state.Password, email: this.props.user.Email }, (err) => {
             if (err) {
                 console.log("error", err.error);

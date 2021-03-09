@@ -10,10 +10,10 @@ import { reducer } from "./redux/redux-reducer";
 const store = createStore(reducer);
 
 ReactDOM.render(
-  <Provider store={store}>
-    <ErrorBoundary>
-      <App />
-    </ErrorBoundary>
-  </Provider>,
-  document.getElementById("root")
+    <Provider store={store}>
+        <ErrorBoundary>
+            <App />
+        </ErrorBoundary>
+    </Provider>,
+    document.getElementById("root")
 );

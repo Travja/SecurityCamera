@@ -1,9 +1,9 @@
 import gulp from 'gulp';
 import nodemon from 'gulp-nodemon';
-import {exec} from 'child_process';
+import { exec } from 'child_process';
 import dotenv from 'dotenv';
 
-dotenv.config({path: "./.env"});
+dotenv.config({ path: "./.env" });
 
 export function installServer() {
     return exec('npm i');
@@ -21,14 +21,14 @@ export function startServer(done) {
         watch: "./**/*",
         env: {
             ...process.env,
-            NODE_ENV:'development'
+            NODE_ENV: 'development'
         },
         done: done
     }).on('restart', ['startClient'])
-    .on('start', ['startClient']);
+        .on('start', ['startClient']);
 }
 
-export function startClient () {
+export function startClient() {
     let app = exec(`npm start`, {
         cwd: './client',
         env: {
@@ -50,12 +50,12 @@ export function buildClient() {
 
 function copyClientBuild() {
     return gulp.src('client/build/**/*')
-          .pipe(gulp.dest('build/client'))
+        .pipe(gulp.dest('build/client'))
 }
 
 function copyServer() {
     return gulp.src('server/**/*')
-               .pipe(gulp.dest('build/'))
+        .pipe(gulp.dest('build/'))
 }
 
 export let client = gulp.series(startClient)

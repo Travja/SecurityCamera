@@ -2,6 +2,6 @@
  * Types of redux functions.
  */
 export const Redux = {
-  LOGIN: "LOGIN",
-  LOGOUT: "LOGOUT",
+    LOGIN: "LOGIN",
+    LOGOUT: "LOGOUT",
 };

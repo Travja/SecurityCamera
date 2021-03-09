@@ -9,10 +9,10 @@ const styles = theme => ({
     root: {
         minWidth: 275,
         '& .MuiTextField-root': {
-          margin: theme.spacing(1),
-          marginLeft: theme.spacing(0),
-          marginRight: theme.spacing(0),
-          width: '100%',
+            margin: theme.spacing(1),
+            marginLeft: theme.spacing(0),
+            marginRight: theme.spacing(0),
+            width: '100%',
         }
     },
     bullet: {
@@ -41,7 +41,7 @@ class Register extends Component {
     }
 
     async register(e) {
-        AccountAPI.login({password: this.state.password, email: this.state.email}, (err) => {
+        AccountAPI.login({ password: this.state.password, email: this.state.email }, (err) => {
             if (err) {
                 console.log("error", err.error);
             } else {
@@ -59,11 +59,11 @@ class Register extends Component {
                     <form action="/api/account" enctype="multipart/form-data" method="post">
                         <CardContent>
                             <Typography variant="h5" component="h2">Register</Typography>
-                            <div><TextField onChange={({ target: { value } }) => this.setState({ name: value })} type="text" name="name" label="Name"/></div>
-                            <div><TextField onChange={({ target: { value } }) => this.setState({ email: value })} type="email" name="email" label="Email" required/></div>
-                            <div><TextField onChange={({ target: { value } }) => this.setState({ password: value })} type="password" name="password" label="Password" required/></div>
+                            <div><TextField onChange={({ target: { value } }) => this.setState({ name: value })} type="text" name="name" label="Name" /></div>
+                            <div><TextField onChange={({ target: { value } }) => this.setState({ email: value })} type="email" name="email" label="Email" required /></div>
+                            <div><TextField onChange={({ target: { value } }) => this.setState({ password: value })} type="password" name="password" label="Password" required /></div>
                             <label>Profile Picture</label>
-                            <div><input type="file" ref={this.fileInput} name="picture"/></div>
+                            <div><input type="file" ref={this.fileInput} name="picture" /></div>
                         </CardContent>
                         <CardActions>
                             <Button variant="contained" color="primary" type="submit" value="Register">Register</Button>

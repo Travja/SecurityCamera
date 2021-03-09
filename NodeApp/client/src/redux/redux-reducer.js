@@ -13,8 +13,8 @@ export const T_VAR = "@token";
 export const RT_VAR = "@refreshToken";
 
 const initial_state = {
-  token: ls.get(T_VAR),
-  refresh_token: ls.get(RT_VAR),
+    token: ls.get(T_VAR),
+    refresh_token: ls.get(RT_VAR),
 };
 
 /**
@@ -24,24 +24,24 @@ const initial_state = {
  * @param {Objcet} action action
  */
 export const reducer = (state = initial_state, action) => {
-  switch (action.type) {
-    case Redux.LOGIN: {
-      ls.set(T_VAR, action.token);
-      ls.set(RT_VAR, action.refresh_token);
-      return {
-        token: action.token,
-        refresh_token: action.refresh_token,
-      };
+    switch (action.type) {
+        case Redux.LOGIN: {
+            ls.set(T_VAR, action.token);
+            ls.set(RT_VAR, action.refresh_token);
+            return {
+                token: action.token,
+                refresh_token: action.refresh_token,
+            };
+        }
+        case Redux.LOGOUT: {
+            ls.remove(T_VAR);
+            ls.remove(RT_VAR);
+            return {
+                token: null,
+                refresh_token: null,
+            };
+        }
+        default:
+            return state;
     }
-    case Redux.LOGOUT: {
-      ls.remove(T_VAR);
-      ls.remove(RT_VAR);
-      return {
-        token: null,
-        refresh_token: null,
-      };
-    }
-    default:
-      return state;
-  }
 };

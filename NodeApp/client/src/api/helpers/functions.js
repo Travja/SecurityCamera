@@ -7,14 +7,14 @@ import axios from "axios";
  * @param {Function} cb callback function
  */
 export const handleError = (err, cb) => {
-  if (
-    err.response &&
-    (err.response.status === 401 || err.response.status === 403)
-  ) {
-    //window.location.href = "/";
-  } else {
-    cb({ error: err.response ? err.response.data.error : err.message }, null);
-  }
+    if (
+        err.response &&
+        (err.response.status === 401 || err.response.status === 403)
+    ) {
+        //window.location.href = "/";
+    } else {
+        cb({ error: err.response ? err.response.data.error : err.message }, null);
+    }
 };
 
 /**
@@ -22,21 +22,21 @@ export const handleError = (err, cb) => {
  * @param {Function} cb function(error, tokens)
  */
 export const getNewTokens = async (cb) => {
-  try {
-    const savedRefreshToken = await ls.get(RT_VAR);
-    const newTokens = await axios.post(
-      "/api/tokens",
-      JSON.stringify({
-        refreshToken: savedRefreshToken,
-      }),
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-    return newTokens.data;
-  } catch (err) {
-    handleError(err, cb);
-  }
+    try {
+        const savedRefreshToken = await ls.get(RT_VAR);
+        const newTokens = await axios.post(
+            "/api/tokens",
+            JSON.stringify({
+                refreshToken: savedRefreshToken,
+            }),
+            {
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+        return newTokens.data;
+    } catch (err) {
+        handleError(err, cb);
+    }
 };
