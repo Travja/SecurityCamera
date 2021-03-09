@@ -63,7 +63,7 @@ public class SocketIO {
         RTCIceServer turnServer = new RTCIceServer();
         turnServer.urls.add("turn:numb.viagenie.ca");
         turnServer.username = "ypatel@student.neumont.edu";
-        turnServer.password = "Camera24";
+        turnServer.password = "Camera_yp";
 
 
         RTCConfiguration config = new RTCConfiguration();
