@@ -77,46 +77,50 @@ if (NODE_ENV === "production") {
 const http = httpServer.createServer(app);
 const io = new Server(http);
 
-let socketsRoom = {};
+let sockets = {};
 
 io.sockets.on("error", e => console.log(e));
 io.sockets.on("connection", socket => {
 
-    socket.on('join', (roomId) => {
+    socket.on('join', (roomId, cameraName) => {
 
-        console.log(`Joining room ${roomId} and emitting room_joined socket event`);
+        console.log(`Joining room ${roomId} `);
         socket.join(roomId);
 
-        if (socketsRoom[socket.id]) return;
+        if (sockets[socket.id]) return;
 
         console.log("socket added to the list");
-        socketsRoom[socket.id] = roomId;
-        console.log(socketsRoom);
+        socket.roomId = roomId;
+        socket.cameraName = cameraName;
+        sockets[socket.id] = socket;
+        socket.to(roomId).emit("setName", cameraName);
+        console.log(sockets);
     });
 
-    socket.on("broadcaster", (roomId) => {
-        console.log("Broadcaster: ", socket.id);
-        socket.to(roomId).emit("broadcaster");
+    socket.on("broadcaster", (roomId, cameraName) => {
+        console.log("Broadcaster: ", cameraName + " : "+ socket.id);
+        socket.to(roomId).emit("broadcaster", cameraName, socket.id);
     });
 
     socket.on("watcher", (roomId) => {
         console.log("Watcher: " + socket.id);
         socket.to(roomId).emit("watcher", socket.id);
     });
-    socket.on("offer", (id, message, roomId) => {
+    socket.on("offer", (id, message) => {
         socket.to(id).emit("offer", socket.id, message);
     });
-    socket.on("answer", (id, message, roomId) => {
+    socket.on("answer", (id, message) => {
         socket.to(id).emit("answer", socket.id, message);
     });
     socket.on("candidate", (id, message, roomId, isBroadcaster) => {
-        // console.log("Got candidate");
         socket.to(id).emit("candidate", socket.id, message, isBroadcaster);
     });
     socket.on("disconnect", () => {
-        const roomId = socketsRoom[socket.id] || "";
+        const roomId = sockets[socket.id].roomId || "";
         console.log("disconnect from room: ", roomId);
         socket.to(roomId).emit("disconnectPeer", socket.id);
+        if(sockets[socket.id])
+            delete sockets[socket.id];
     });
 });
 // start to listen

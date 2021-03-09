@@ -24,7 +24,7 @@ class Streams extends Component {
         ]
     };
     streams = [];
-
+    cameraNames = {};
     roomId;
     socket;
 
@@ -71,7 +71,9 @@ class Streams extends Component {
                             console.log("no. of streams", this.streams.length);
                             let video = <video playsInline autoPlay muted controls ref={vid => { if (vid) { vid.srcObject = event.streams[0]; } }} width="100%"></video>;
                             console.log("Streams:", this.streams);
-                            this.setState({ streamElements: [...this.state.streamElements, <StreamingCard video={video} key={id} />] });
+                            console.log("Camera names", this.cameraNames);
+                            this.setState({ streamElements: [...this.state.streamElements, <StreamingCard video={video} key={id} title={this.cameraNames[id]}/>] });
+                            console.log("stream key", id);
                         }
                     };
                     this.peerConnections[id].onicecandidate = event => {
@@ -86,7 +88,9 @@ class Streams extends Component {
                     this.socket.emit("watcher", this.roomId);
                 });
 
-                this.socket.on("broadcaster", () => {
+                this.socket.on("broadcaster", (cameraName, broadcasterId) => {
+                    this.cameraNames[broadcasterId] = cameraName;
+                    console.log(this.cameraNames)
                     this.socket.emit("watcher", this.roomId);
                 });
 
