@@ -68,6 +68,7 @@ aside#drawer>header .profile-picture {
     background-color: white;
     height: 80px;
     width: 80px;
+    object-fit: cover;
 }
 
 aside#drawer.collapsed>header>section {
