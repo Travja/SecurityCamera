@@ -64,7 +64,9 @@ const account_routes = [
                 try {
                     const { email, password } = req.body;
                     let request = await (await useSql()).request();
-                    const result = await request.query`select * from [User] where Email = ${email}`;
+                    console.log(email);
+                    const result = await request.query`select * from [User] where LOWER(Email) = LOWER(${email})`;
+                    console.log(result);
                     if (!result.recordset[0])
                         return res.status(404).json({ error: "No user found" });
                     if (!bcrypt.compareSync(password, result.recordset[0].Hash))
