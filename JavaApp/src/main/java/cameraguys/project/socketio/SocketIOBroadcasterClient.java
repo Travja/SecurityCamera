@@ -79,14 +79,12 @@ public class SocketIOBroadcasterClient {
 
         System.out.println("Attempting to connect to socket on " + url);
         socket = IO.socket(URI.create(url));
-        ConnectionInformation info = ConnectionInformation.load();
-        SocketIO.roomId = info.getEmail();
-
+        SocketIO.roomId = connInfo.getEmail();
         socket.connect();
 
         socket.on("connect", objects -> {
-            socket.emit("join", connInfo.getEmail());
-            socket.emit("broadcaster");
+            socket.emit("join", connInfo.getEmail(), connInfo.getCameraName());
+            socket.emit("broadcaster", connInfo.getEmail(), connInfo.getCameraName());
         });
         socket.on("answer", SocketIO.answerListener);
         socket.on("watcher", SocketIO.watcherListener);
