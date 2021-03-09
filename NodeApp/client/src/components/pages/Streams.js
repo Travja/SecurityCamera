@@ -17,9 +17,9 @@ class Streams extends Component {
                 urls: 'stun:stunserver.org:3478'
             },
             {
-                url: 'turn:numb.viagenie.ca',
-                username: 'ypatel@student.neumont.edu',
-                credential: 'Camera24'
+                url: REACT_APP_TURN_URL,
+                username: process.env.REACT_APP_TURN_USERNAME,
+                credential: process.env.REACT_APP_TURN_CREDENTIAL
             }
         ]
     };
