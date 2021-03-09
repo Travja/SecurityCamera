@@ -1,6 +1,7 @@
 package cameraguys.project.socketio;
 
 import cameraguys.project.ClientWindow;
+import cameraguys.project.http.ConnectionInformation;
 import dev.onvoid.webrtc.*;
 import dev.onvoid.webrtc.media.audio.AudioTrack;
 import dev.onvoid.webrtc.media.video.VideoTrack;
@@ -109,7 +110,7 @@ public class SocketIO {
                                     .put("type", peerConnection.getLocalDescription().sdpType.toString().toLowerCase())
                                     .put("sdp", peerConnection.getLocalDescription().sdp)
                                     .toString();
-                            SocketIOBroadcasterClient.getSocket().emit("offer", id, json, roomId);
+                            SocketIOBroadcasterClient.getSocket().emit("offer", id, json, ConnectionInformation.load().getCameraName());
                             System.out.println("Sent offer.");
                         } catch (JSONException e) {
                             System.err.println("Could not convert to json...");

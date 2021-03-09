@@ -106,8 +106,8 @@ io.sockets.on("connection", socket => {
         console.log("Watcher: " + socket.id);
         socket.to(roomId).emit("watcher", socket.id);
     });
-    socket.on("offer", (id, message) => {
-        socket.to(id).emit("offer", socket.id, message);
+    socket.on("offer", (id, message, cameraName) => {
+        socket.to(id).emit("offer", socket.id, message, cameraName);
     });
     socket.on("answer", (id, message) => {
         socket.to(id).emit("answer", socket.id, message);
